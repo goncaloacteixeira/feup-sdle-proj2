@@ -3,7 +3,8 @@ const TCP = require('libp2p-tcp');
 const { NOISE } = require('libp2p-noise');
 const MPLEX = require('libp2p-mplex');
 const MulticastDNS = require('libp2p-mdns');
-const Gossipsub = require('libp2p-gossipsub')
+const Gossipsub = require('libp2p-gossipsub');
+const DHT = require('libp2p-kad-dht');
 
 exports.create_node = async function create_node() {
     const node = await Libp2p.create({
@@ -15,7 +16,8 @@ exports.create_node = async function create_node() {
             connEncryption: [NOISE],
             streamMuxer: [MPLEX],
             peerDiscovery: [MulticastDNS], // we can add other mechanisms such as bootstrap
-            pubsub: Gossipsub
+            pubsub: Gossipsub,
+            dht: DHT,
         },
         config: {
             peerDiscovery: {
@@ -29,8 +31,11 @@ exports.create_node = async function create_node() {
         }
     });
 
+    node.discovered = [];
+
     node.on('peer:discovery', (peer) => {
         console.log('peer:discovery', peer.toB58String());
+        node.discovered.push(peer.toB58String());
     });
 
     await node.start();

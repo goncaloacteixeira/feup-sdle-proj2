@@ -8,7 +8,7 @@ const Gossipsub = require('libp2p-gossipsub')
 exports.create_node = async function create_node() {
     const node = await Libp2p.create({
         addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0']
+            listen: ['/ip4/0.0.0.0/tcp/0']
         },
         modules: {
             transport: [TCP],

@@ -27,6 +27,9 @@ exports.create_node = async function create_node() {
                     enabled: true
                 },
                 // other discovery module options (for bootstrap for instance)
+            },
+            dht: {
+                enabled: true
             }
         }
     });
@@ -37,6 +40,10 @@ exports.create_node = async function create_node() {
         console.log('peer:discovery', peer.toB58String());
         node.discovered.push(peer.toB58String());
     });
+
+    node.connectionManager.on('peer:connect', (connection) => {
+        console.log('Connected to:', connection.peerId.toB58String());
+    })
 
     await node.start();
     console.log('libp2p has started');

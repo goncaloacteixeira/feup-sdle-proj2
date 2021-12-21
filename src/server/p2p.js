@@ -22,7 +22,7 @@ exports.create_node = async function create_node() {
         config: {
             peerDiscovery: {
                 autoDial: true,
-                'mdns': {
+                [MulticastDNS.tag]: {
                     interval: 1000,
                     enabled: true
                 },
@@ -42,7 +42,7 @@ exports.create_node = async function create_node() {
     });
 
     node.connectionManager.on('peer:connect', (connection) => {
-        console.log('Connected to:', connection.peerId.toB58String());
+        console.log('Connected to:', connection.remotePeer.toB58String());
     })
 
     await node.start();

@@ -3,6 +3,7 @@ import React from "react";
 import CustomAppBar from "./components/AppBar";
 import {Alert} from "@mui/material";
 import Feed from "./components/Feed";
+import DevModal from "./components/DevModal";
 
 function App() {
     const [data, setData] = React.useState(null);
@@ -20,8 +21,9 @@ function App() {
         <div>
             <CustomAppBar/>
             {!data ? 'Starting node...' :
-                <Alert severity="success">Node Started! Current PeerId: {data.peerId}</Alert>
+                <Alert severity="success">Node Started! Current PeerId: {data.peerId}<DevModal /></Alert>
             }
+
             <Feed />
         </div>
     );

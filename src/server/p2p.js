@@ -34,11 +34,12 @@ exports.create_node = async function create_node() {
         }
     });
 
-    node.discovered = [];
+    node.application = {
+        username: node.peerId.toB58String(),
+    };
 
     node.on('peer:discovery', (peer) => {
         console.log('peer:discovery', peer.toB58String());
-        node.discovered.push(peer.toB58String());
     });
 
     node.connectionManager.on('peer:connect', (connection) => {

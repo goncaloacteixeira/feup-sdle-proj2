@@ -26,7 +26,7 @@ export default function DiscoveredPeersGrid(props) {
     return (
         <div style={{height: 400, width: '100%'}}>
             <DataGrid
-                rows={props.discovered}
+                rows={props.peers}
                 columns={columns}
                 pageSize={5}
                 rowHeight={75}

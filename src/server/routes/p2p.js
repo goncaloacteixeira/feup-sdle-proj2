@@ -24,7 +24,7 @@ router.get('/start', (async (req, res) => {
     const hash = await sha256.digest(bytes)
     const cid = CID.create(1, json.code, hash)
 
-/*    setTimeout(async () => {
+    /*setTimeout(async () => {
         await node.contentRouting.put(new TextEncoder().encode('message1'), new TextEncoder().encode('nice'),
             {
                 minPeers: 1
@@ -62,11 +62,13 @@ router.get('/info', (req, res) => {
         discovered.push(node);
     })
 
-    res.send({discovered: discovered});
+    res.send({discovered: discovered, data: node.application});
 })
 
-router.get('/discovered', (req, res) => {
-    res.json({discovered: node.discovered});
-});
+router.post('/username', (req, res) => {
+    node.application.username = req.body.username;
+    console.info("Username changed to:", node.application.username);
+    res.send("success");
+})
 
 module.exports = router;

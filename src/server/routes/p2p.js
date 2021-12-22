@@ -8,7 +8,6 @@ const all = require('it-all')
 const delay = require('delay')
 const pipe = require("it-pipe");
 const PeerId = require("peer-id");
-const {reject} = require("delay");
 
 
 let node = null;
@@ -51,6 +50,12 @@ router.get('/start', (async (req, res) => {
  * returns discovered Peers
  */
 router.get('/info', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
     const discovered = [];
 
     node.peerStore.addressBook.data.forEach((v, k) => {
@@ -67,6 +72,7 @@ router.get('/info', async (req, res) => {
         discovered.push(node);
     })
 
+    // usernames
     for (let discoveredElement of discovered) {
         let peerId = PeerId.createFromB58String(discoveredElement.id);
         let {message, code} = await _get_username(peerId);

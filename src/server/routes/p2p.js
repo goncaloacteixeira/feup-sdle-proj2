@@ -121,7 +121,15 @@ async function _get_username(peerId) {
     });
 }
 
-
+/**
+ * POST method to update/create the public record for the user
+ *
+ * TODO: do not store the post information:
+ *  1- Generate CID for Post
+ *  2- Update Record with new CID
+ *  3- Send PUT for Post
+ *  4- Send PUT for Record
+ */
 router.post('/posts', (req, res) => {
     if (!node) {
         return res.status(400).send({
@@ -131,44 +139,66 @@ router.post('/posts', (req, res) => {
 
     const post = {
         data: req.body.post,
-        author: node.application.username,
         timestamp: Date.now()
     };
 
-    const postStr = JSON.stringify(post);
+    const putRecord = (record) => {
+        node.contentRouting.put(new TextEncoder().encode(node.application.username), new TextEncoder().encode(JSON.stringify(record)),
+            {minPeers: 4})
+            .then(
+                _ => {
+                    console.log("Success PUT:", record)
+                    res.send({message: 'success', record: record})
+                },
+                reason => res.send({message: reason.code, record: record})
+            );
+    }
 
-    node.contentRouting.put(new TextEncoder().encode(node.application.username), new TextEncoder().encode(postStr),
-        {minPeers: 4})
+    node.contentRouting.get(new TextEncoder().encode(node.application.username))
         .then(
-            _ => {
-                console.log("Success PUT:", post)
-                res.send({message: 'success'})
-            },
-            reason => res.send({message: reason.code})
-        );
-});
+            message => {
+                // Get the record and add the new post
+                let msgStr = new TextDecoder().decode(message.val);
+                let record = JSON.parse(msgStr);
+                record.posts.push(post);
 
-router.get('/posts/:username',  (req, res) => {
+                console.log("Updating record:", record);
+                putRecord(record);
+            },
+            _ => {
+                // Get the record and add the new post
+                let record = {
+                    posts: [post],
+                    author: node.application.username,
+                    peerId: node.peerId.toB58String()
+                };
+
+                console.log("Creating new record:", record);
+                putRecord(record);
+            }
+        );
+})
+
+router.get('/records/:username', (req, res) => {
     if (!node) {
         return res.status(400).send({
             message: "Node not Started!"
         });
     }
 
-    // WIP: we should store the post under a CID, and have a public record of available posts under 'username'
-    // the peers should look for the public record first then get the posts
-    // every time a user writes a new post it should update the public record (first fetching it and then updating)
-
-    // this gets the last message published by :username
-    // we cannot determine yet where the message came from (new feature, maybe use Delegated Content Routing??)
     node.contentRouting.get(new TextEncoder().encode(req.params.username))
         .then(
             message => {
+                // Get the record and add the new post
                 let msgStr = new TextDecoder().decode(message.val);
-                res.send({post: JSON.parse(msgStr), from: message.from});
+                let record = JSON.parse(msgStr);
+
+                res.send({message: record});
             },
-            reason => res.send({message: reason.code})
+            reason => {
+                res.send({message: reason.code})
+            }
         );
-});
+})
 
 module.exports = router;

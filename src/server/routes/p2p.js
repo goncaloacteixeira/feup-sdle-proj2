@@ -25,24 +25,6 @@ router.get('/start', (async (req, res) => {
 
     const hash = await sha256.digest(bytes)
     const cid = CID.create(1, json.code, hash)
-
-    /*setTimeout(async () => {
-        await node.contentRouting.put(new TextEncoder().encode('message1'), new TextEncoder().encode('nice'),
-            {
-                minPeers: 1
-            }
-        ).catch((e) => {
-            console.error(e.message)
-        });
-
-        await delay(5000);
-        const message = await node.contentRouting.get(new TextEncoder().encode('message1'));
-
-        await delay(2000);
-        console.log(message.from)
-        console.log(new TextDecoder().decode(message.val))
-    }, 2000);*/
-
 }));
 
 /**
@@ -166,12 +148,16 @@ router.post('/posts', (req, res) => {
         );
 });
 
-router.get('/posts/:username', (req, res) => {
+router.get('/posts/:username',  (req, res) => {
     if (!node) {
         return res.status(400).send({
             message: "Node not Started!"
         });
     }
+
+    // WIP: we should store the post under a CID, and have a public record of available posts under 'username'
+    // the peers should look for the public record first then get the posts
+    // every time a user writes a new post it should update the public record (first fetching it and then updating)
 
     // this gets the last message published by :username
     // we cannot determine yet where the message came from (new feature, maybe use Delegated Content Routing??)

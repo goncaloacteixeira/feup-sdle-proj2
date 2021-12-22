@@ -1,10 +1,13 @@
 const Libp2p = require('libp2p');
 const TCP = require('libp2p-tcp');
-const { NOISE } = require('libp2p-noise');
+const {NOISE} = require('libp2p-noise');
 const MPLEX = require('libp2p-mplex');
 const MulticastDNS = require('libp2p-mdns');
 const Gossipsub = require('libp2p-gossipsub');
 const DHT = require('libp2p-kad-dht');
+const pipe = require('it-pipe')
+const {map} = require('streaming-iterables')
+const {toBuffer} = require('it-buffer')
 
 exports.create_node = async function create_node() {
     const node = await Libp2p.create({
@@ -44,6 +47,13 @@ exports.create_node = async function create_node() {
 
     node.connectionManager.on('peer:connect', (connection) => {
         console.log('Connected to:', connection.remotePeer.toB58String());
+    })
+
+    node.handle('/username', ({stream}) => {
+        pipe(
+            [node.application.username],
+            stream
+        )
     })
 
     await node.start();

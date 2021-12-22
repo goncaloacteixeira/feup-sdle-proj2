@@ -42,7 +42,7 @@ export default function DevModal() {
     const handleSubmitUsername = e => {
         e.preventDefault();
 
-        axios.post('/p2p/username',
+        axios.post('/p2p/info',
             {
                 username: e.target.username.value,
             }).then((res) => {

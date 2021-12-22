@@ -4,6 +4,7 @@ import {Typography} from "@mui/material";
 
 const columns = [
     {field: 'id', headerName: 'Peer ID', flex: 1},
+    {field: 'username', headerName: 'Username', width: 150},
     {
         field: 'addresses',
         headerName: 'Addresses',

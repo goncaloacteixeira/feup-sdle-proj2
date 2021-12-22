@@ -140,4 +140,49 @@ async function _get_username(peerId) {
 }
 
 
+router.post('/posts', (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    const post = {
+        data: req.body.post,
+        author: node.application.username,
+        timestamp: Date.now()
+    };
+
+    const postStr = JSON.stringify(post);
+
+    node.contentRouting.put(new TextEncoder().encode(node.application.username), new TextEncoder().encode(postStr),
+        {minPeers: 4})
+        .then(
+            _ => {
+                console.log("Success PUT:", post)
+                res.send({message: 'success'})
+            },
+            reason => res.send({message: reason.code})
+        );
+});
+
+router.get('/posts/:username', (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    // this gets the last message published by :username
+    // we cannot determine yet where the message came from (new feature, maybe use Delegated Content Routing??)
+    node.contentRouting.get(new TextEncoder().encode(req.params.username))
+        .then(
+            message => {
+                let msgStr = new TextDecoder().decode(message.val);
+                res.send({post: JSON.parse(msgStr), from: message.from});
+            },
+            reason => res.send({message: reason.code})
+        );
+});
+
 module.exports = router;

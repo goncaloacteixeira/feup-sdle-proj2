@@ -39,6 +39,7 @@ exports.create_node = async function create_node() {
 
     node.application = {
         username: node.peerId.toB58String(),
+        peerId: node.peerId.toB58String(),
     };
 
     node.on('peer:discovery', (peer) => {

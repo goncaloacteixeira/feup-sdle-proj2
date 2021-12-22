@@ -11,9 +11,9 @@ function App() {
     const [data, setData] = React.useState(null);
 
     React.useEffect(() => {
-        fetch("/p2p/start")
+        fetch("/p2p/info")
             .then((res) => res.json())
-            .then((data) => setData(data));
+            .then((data) => setData(data.data));
     }, []);
 
     return (

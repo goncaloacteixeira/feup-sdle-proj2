@@ -12,6 +12,11 @@ const PeerId = require("peer-id");
 
 let node = null;
 
+async function create(username) {
+    node = await p2p.create_node();
+    node.application.username = username;
+}
+
 router.get('/start', (async (req, res) => {
     node = !node ? await p2p.create_node() : node;
     res.json({
@@ -201,4 +206,4 @@ router.get('/records/:username', (req, res) => {
         );
 })
 
-module.exports = router;
+module.exports = [router, create];

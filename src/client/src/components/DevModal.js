@@ -5,14 +5,11 @@ import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import axios from 'axios';
 import DiscoveredPeersGrid from "./DiscoveredPeersGrid";
-import {FormControl, Grid, IconButton, InputLabel, OutlinedInput} from "@mui/material";
 import styled from "@emotion/styled";
-import {render} from "react-dom";
 
-const Input = styled('input')({
+styled('input')({
     display: 'none',
 });
-
 const style = {
     position: 'absolute',
     top: '50%',
@@ -39,17 +36,6 @@ export default function DevModal() {
     };
     const handleClose = () => setOpen(false);
 
-    const handleSubmitUsername = e => {
-        e.preventDefault();
-
-        axios.post('/p2p/info',
-            {
-                username: e.target.username.value,
-            }).then((res) => {
-            console.log(res);
-        })
-    }
-
     return (
         <div>
             <Button onClick={handleOpen}>Open Dev Panel</Button>
@@ -65,26 +51,9 @@ export default function DevModal() {
                     </Typography>
                     {!data ? "Loading..." :
                         <div>
-                            <Grid component="form" onSubmit={handleSubmitUsername} py={3} container spacing={3}>
-                                <Grid item xs={10}>
-                                    <FormControl fullWidth>
-                                        <InputLabel name="username" htmlFor="search-query">Username</InputLabel>
-                                        <OutlinedInput required defaultValue={data.data.username} id="username"
-                                                       label="Username"/>
-                                    </FormControl>
-                                </Grid>
-
-                                <Grid item xs={2} alignSelf="center" align="center">
-                                    <label htmlFor="search-button">
-                                        <Button type="submit" variant="outlined">SUBMIT</Button>
-                                    </label>
-                                </Grid>
-
-                            </Grid>
                             <DiscoveredPeersGrid peers={data.discovered}/>
                         </div>
                     }
-
                 </Box>
             </Modal>
         </div>

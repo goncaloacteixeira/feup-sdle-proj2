@@ -8,7 +8,7 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var testRouter = require('./routes/test');
-var p2pRouter = require('./routes/p2p');
+var [p2pRouter, create] = require('./routes/p2p');
 
 var app = express();
 
@@ -43,5 +43,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+create(process.env.USERNAME || 'unknown');
 
 module.exports = app;

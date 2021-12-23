@@ -4,11 +4,8 @@ const router = express.Router();
 const {CID} = require('multiformats/cid')
 const json = require('multiformats/codecs/json')
 const {sha256} = require('multiformats/hashes/sha2')
-const all = require('it-all')
-const delay = require('delay')
 const pipe = require("it-pipe");
 const PeerId = require("peer-id");
-
 
 let node = null;
 
@@ -129,7 +126,6 @@ async function _get_username(peerId) {
 /**
  * POST method to update/create the public record for the user
  *
- * TODO: do not store the post information:
  *  1- Generate CID for Post
  *  2- Update Record with new CID
  *  3- Send PUT for Post
@@ -159,27 +155,47 @@ router.post('/posts', (req, res) => {
             );
     }
 
+    const putPost = async (post) => {
+        const bytes = json.encode(post)
+
+        const hash = await sha256.digest(bytes)
+        const cid = CID.create(1, json.code, hash)
+
+        await node.contentRouting.put(cid.bytes, new TextEncoder().encode(JSON.stringify(post)),
+            {minPeers: 4})
+            .catch(reason => console.warn("PUT:", cid, reason.message))
+
+        return cid;
+    }
+
     node.contentRouting.get(new TextEncoder().encode(node.application.username))
         .then(
             message => {
                 // Get the record and add the new post
                 let msgStr = new TextDecoder().decode(message.val);
                 let record = JSON.parse(msgStr);
-                record.posts.push(post);
 
-                console.log("Updating record:", record);
-                putRecord(record);
+                putPost(post)
+                    .then(cid => {
+                        record.posts.push({cid: cid.toString(), timestamp: post.timestamp});
+                        console.log("Updating record");
+                        putRecord(record);
+                    })
             },
             _ => {
                 // Get the record and add the new post
                 let record = {
-                    posts: [post],
-                    author: node.application.username,
+                    posts: [],
+                    username: node.application.username,
                     peerId: node.peerId.toB58String()
                 };
 
-                console.log("Creating new record:", record);
-                putRecord(record);
+                putPost(post)
+                    .then(cid => {
+                        record.posts.push({cid: cid.toString(), timestamp: post.timestamp});
+                        console.log("Creating new record");
+                        putRecord(record);
+                    })
             }
         );
 })
@@ -204,6 +220,57 @@ router.get('/records/:username', (req, res) => {
                 res.send({message: reason.code})
             }
         );
+})
+
+router.get('/posts', (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    const cid = CID.parse(req.query.cid)
+
+    node.contentRouting.get(cid.bytes)
+        .then(
+            message => {
+                let msgStr = new TextDecoder().decode(message.val);
+                let record = JSON.parse(msgStr);
+
+                res.send({message: record});
+            },
+            reason => {
+                res.send({message: reason.code})
+            }
+        );
+})
+
+router.get('/posts/:username', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    // get public record
+    node.contentRouting.get(new TextEncoder().encode(req.params.username))
+        .then(
+            async message => {
+                let msgStr = new TextDecoder().decode(message.val);
+                let record = JSON.parse(msgStr);
+
+                let posts = []
+                for (let post of record.posts) {
+                    const cid = CID.parse(post.cid)
+                    const m1 = await node.contentRouting.get(cid.bytes)
+                        .catch(r => console.log(r.message));
+                    if (!m1) continue;
+                    let m1str = new TextDecoder().decode(m1.val);
+                    posts.push(JSON.parse(m1str));
+                }
+                res.send({message: posts});
+            },
+            reason => res.send({message: reason.code}));
 })
 
 module.exports = [router, create];

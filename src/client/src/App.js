@@ -4,7 +4,6 @@ import CustomAppBar from "./components/AppBar";
 import {Alert, AppBar, FormControl, Grid, InputLabel, OutlinedInput, Toolbar} from "@mui/material";
 import DevModal from "./components/DevModal";
 import Feed from "./components/Feed";
-import Button from "@mui/material/Button";
 import NewPostForm from "./components/NewPostForm";
 
 function App() {

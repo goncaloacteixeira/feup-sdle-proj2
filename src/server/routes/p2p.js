@@ -124,12 +124,7 @@ async function _get_username(peerId) {
 }
 
 /**
- * POST method to update/create the public record for the user
- *
- *  1- Generate CID for Post
- *  2- Update Record with new CID
- *  3- Send PUT for Post
- *  4- Send PUT for Record
+ * POST method to update/create the public record for the user with a new post
  */
 router.post('/posts', (req, res) => {
     if (!node) {
@@ -138,8 +133,13 @@ router.post('/posts', (req, res) => {
         });
     }
 
+    if (req.body.post.length > 240) {
+        return res.status(400).send({message: 'ERR_DATA_LENGTH'});
+    }
+
     const post = {
         data: req.body.post,
+        author: node.application.username,
         timestamp: Date.now()
     };
 
@@ -147,25 +147,9 @@ router.post('/posts', (req, res) => {
         node.contentRouting.put(new TextEncoder().encode(node.application.username), new TextEncoder().encode(JSON.stringify(record)),
             {minPeers: 4})
             .then(
-                _ => {
-                    console.log("Success PUT:", record)
-                    res.send({message: 'success', record: record})
-                },
+                _ => res.send({message: 'success', record: record}),
                 reason => res.send({message: reason.code, record: record})
             );
-    }
-
-    const putPost = async (post) => {
-        const bytes = json.encode(post)
-
-        const hash = await sha256.digest(bytes)
-        const cid = CID.create(1, json.code, hash)
-
-        await node.contentRouting.put(cid.bytes, new TextEncoder().encode(JSON.stringify(post)),
-            {minPeers: 4})
-            .catch(reason => console.warn("PUT:", cid, reason.message))
-
-        return cid;
     }
 
     node.contentRouting.get(new TextEncoder().encode(node.application.username))
@@ -175,27 +159,21 @@ router.post('/posts', (req, res) => {
                 let msgStr = new TextDecoder().decode(message.val);
                 let record = JSON.parse(msgStr);
 
-                putPost(post)
-                    .then(cid => {
-                        record.posts.push({cid: cid.toString(), timestamp: post.timestamp});
-                        console.log("Updating record");
-                        putRecord(record);
-                    })
+                record.posts.push(post);
+
+                putRecord(record);
             },
             _ => {
                 // Get the record and add the new post
                 let record = {
-                    posts: [],
+                    posts: [post],
+                    subscribers: [],
+                    subscribed: [],
                     username: node.application.username,
                     peerId: node.peerId.toB58String()
                 };
 
-                putPost(post)
-                    .then(cid => {
-                        record.posts.push({cid: cid.toString(), timestamp: post.timestamp});
-                        console.log("Creating new record");
-                        putRecord(record);
-                    })
+                putRecord(record);
             }
         );
 })
@@ -222,55 +200,5 @@ router.get('/records/:username', (req, res) => {
         );
 })
 
-router.get('/posts', (req, res) => {
-    if (!node) {
-        return res.status(400).send({
-            message: "Node not Started!"
-        });
-    }
-
-    const cid = CID.parse(req.query.cid)
-
-    node.contentRouting.get(cid.bytes)
-        .then(
-            message => {
-                let msgStr = new TextDecoder().decode(message.val);
-                let record = JSON.parse(msgStr);
-
-                res.send({message: record});
-            },
-            reason => {
-                res.send({message: reason.code})
-            }
-        );
-})
-
-router.get('/posts/:username', async (req, res) => {
-    if (!node) {
-        return res.status(400).send({
-            message: "Node not Started!"
-        });
-    }
-
-    // get public record
-    node.contentRouting.get(new TextEncoder().encode(req.params.username))
-        .then(
-            async message => {
-                let msgStr = new TextDecoder().decode(message.val);
-                let record = JSON.parse(msgStr);
-
-                let posts = []
-                for (let post of record.posts) {
-                    const cid = CID.parse(post.cid)
-                    const m1 = await node.contentRouting.get(cid.bytes)
-                        .catch(r => console.log(r.message));
-                    if (!m1) continue;
-                    let m1str = new TextDecoder().decode(m1.val);
-                    posts.push(JSON.parse(m1str));
-                }
-                res.send({message: posts});
-            },
-            reason => res.send({message: reason.code}));
-})
 
 module.exports = [router, create];

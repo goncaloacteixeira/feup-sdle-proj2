@@ -8,6 +8,7 @@ const DHT = require('libp2p-kad-dht');
 const pipe = require('it-pipe')
 const {map} = require('streaming-iterables')
 const {toBuffer} = require('it-buffer')
+const delay = require("delay");
 
 exports.create_node = async function create_node() {
     const node = await Libp2p.create({
@@ -44,13 +45,15 @@ exports.create_node = async function create_node() {
         console.log('peer:discovery', peer.toB58String());
     });
 
-    let latest = false;
+    // let latest = false;
 
-    node.connectionManager.on('peer:connect', (connection) => {
+    node.connectionManager.on('peer:connect', async (connection) => {
         console.log('Connected to:', connection.remotePeer.toB58String());
 
+        // give some time to get the record
+        // await delay(2000);
 
-        if (!latest) {
+        /*if (!latest) {
             // Search for the record, if it exists then do nothing, if not invoke a PUT operation
             node.contentRouting.get(new TextEncoder().encode(node.application.username))
                 .then(message => {
@@ -75,11 +78,12 @@ exports.create_node = async function create_node() {
                     node.contentRouting.put(new TextEncoder().encode(node.application.username),
                         new TextEncoder().encode(JSON.stringify(node.application)),
                         {minPeers: 1})
-                        .then(_ => console.log({message: 'OK', description: 'CREATED'}), reason => console.log({
-                            message: reason.code, description: reason.message,
-                        }));
+                        .then(
+                            _ => console.log({message: 'OK', description: 'CREATED'}),
+                            reason => console.log({message: reason.code, description: reason.message})
+                        );
                 });
-        }
+        }*/
     })
 
     node.handle('/username', ({stream}) => {

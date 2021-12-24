@@ -4,6 +4,7 @@ const {NOISE} = require('libp2p-noise');
 const MPLEX = require('libp2p-mplex');
 const MulticastDNS = require('libp2p-mdns');
 const Gossipsub = require('libp2p-gossipsub');
+const Bootstrap = require('libp2p-bootstrap');
 const DHT = require('libp2p-kad-dht');
 const pipe = require('it-pipe')
 const {map} = require('streaming-iterables')
@@ -18,14 +19,23 @@ exports.create_node = async function create_node() {
             transport: [TCP],
             connEncryption: [NOISE],
             streamMuxer: [MPLEX],
-            peerDiscovery: [MulticastDNS], // we can add other mechanisms such as bootstrap
+            peerDiscovery: [Bootstrap], // we can add other mechanisms such as bootstrap
             pubsub: Gossipsub,
             dht: DHT,
         }, config: {
             peerDiscovery: {
-                autoDial: true, [MulticastDNS.tag]: {
-                    interval: 1000, enabled: true
-                }, // other discovery module options (for bootstrap for instance)
+                autoDial: true,
+                [MulticastDNS.tag]: {
+                    interval: 1000,
+                    enabled: false
+                },
+                [Bootstrap.tag]: {
+                    list: [
+                        '/ip4/127.0.0.1/tcp/8999/p2p/Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb'
+                    ],
+                    interval: 2000,
+                    enabled: true,
+                }
             }, dht: {
                 enabled: true
             }

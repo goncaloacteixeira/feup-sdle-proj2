@@ -9,25 +9,16 @@ const PeerId = require("peer-id");
 
 let node = null;
 
+/**
+ * When node is started it should update the username variable
+ * then it should start a PUT operation for its record on the network
+ * @param username username linked to the user
+ * @returns {Promise<unknown>}
+ */
 async function create(username) {
     node = await p2p.create_node();
     node.application.username = username;
 }
-
-router.get('/start', (async (req, res) => {
-    node = !node ? await p2p.create_node() : node;
-    res.json({
-        message: 'success start node',
-        listening: node.multiaddrs,
-        peerId: node.peerId.toB58String(),
-        peerStoreData: node.peerStore.addressBook.data
-    });
-
-    const bytes = json.encode({hello: 'world'})
-
-    const hash = await sha256.digest(bytes)
-    const cid = CID.create(1, json.code, hash)
-}));
 
 /**
  * GET information for node
@@ -144,6 +135,9 @@ router.post('/posts', (req, res) => {
     };
 
     const putRecord = (record) => {
+        node.application = record;
+        node.application.updated = Date.now();
+
         node.contentRouting.put(new TextEncoder().encode(node.application.username), new TextEncoder().encode(JSON.stringify(record)),
             {minPeers: 4})
             .then(

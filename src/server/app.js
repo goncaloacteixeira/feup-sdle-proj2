@@ -44,6 +44,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-create(process.env.USERNAME || 'unknown');
+create(process.env.USERNAME || 'unknown')
+    .then(_ => console.log("Node Created!"));
 
 module.exports = app;

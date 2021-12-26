@@ -27,7 +27,7 @@ async function create_node() {
     const node = await Libp2p.create({
         peerId,
         addresses: {
-            listen: ['/ip4/0.0.0.0/tcp/8999']
+            listen: ['/ip4/0.0.0.0/tcp/' + process.env.PORT]
         }, modules: {
             transport: [TCP],
             connEncryption: [NOISE],

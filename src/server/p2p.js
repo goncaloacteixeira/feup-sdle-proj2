@@ -8,6 +8,11 @@ const DHT = require('libp2p-kad-dht');
 const pipe = require('it-pipe')
 const PeerId = require("peer-id");
 
+const BOOTSTRAP_IDS = [
+    'Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
+    'QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs',
+]
+
 exports.create_node = async function create_node() {
     const node = await Libp2p.create({
         addresses: {
@@ -41,7 +46,7 @@ exports.create_node = async function create_node() {
         posts: [],
         subscribed: [],
         subscribers: [],
-        username: node.peerId.toB58String(),
+        username: process.env.USERNAME,
         peerId: node.peerId.toB58String(),
         updated: 0,
     };
@@ -52,6 +57,34 @@ exports.create_node = async function create_node() {
 
     node.connectionManager.on('peer:connect', async (connection) => {
         console.log('Connected to:', connection.remotePeer.toB58String());
+
+        // if the connection was established to a Bootstrap Peer, then it should have
+        // the public record available if it does exist for this user, then it should
+        // update the record
+        if (BOOTSTRAP_IDS.includes(connection.remotePeer.toB58String())) {
+            node.dialProtocol(connection.remotePeer, ['/record/1.0.0'])
+                .then(({stream}) => {
+                    pipe(
+                        [node.application.username],
+                        stream,
+                        async function (source) {
+                            for await (const msg of source) {
+                                let result = JSON.parse(msg.toString());
+
+                                if (result.message === "ERR_NOT_FOUND") {
+                                    console.log("> Record does not exist!")
+                                    // keep current record (FIXME: send current record to the cloud)
+                                    return;
+                                } else {
+                                    console.log("> Retrieved Record!")
+                                    node.application = result.message;
+                                    return;
+                                }
+                            }
+                        }
+                    )
+                })
+        }
 
         node.peerStore.addressBook.add(connection.remotePeer, [connection.remoteAddr]);
     })

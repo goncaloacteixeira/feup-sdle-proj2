@@ -33,24 +33,9 @@ router.get('/info', async (req, res) => {
     res.send({discovered: discovered, data: node.application});
 })
 
-router.post('/info', (req, res) => {
-    if (!node) {
-        return res.status(400).send({
-            message: "Node not Started!"
-        });
-    }
-
-    if (!req.body.username) {
-        return res.status(400).send({
-            message: "Username provided is not valid!"
-        });
-    }
-
-    node.application.username = req.body.username;
-    console.info("Username changed to:", node.application.username);
-    res.send({message: "success"});
-})
-
+/**
+ * GET username from peerId
+ */
 router.get('/username/:peerid', (req, res) => {
     if (!node) {
         return res.status(400).send({
@@ -117,6 +102,9 @@ router.post('/posts', (req, res) => {
         );
 })
 
+/**
+ * GET method for current user's public record
+ */
 router.get('/record', (req, res) => {
     if (!node) {
         return res.status(400).send({

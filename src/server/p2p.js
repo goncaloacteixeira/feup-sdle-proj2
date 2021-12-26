@@ -7,6 +7,7 @@ const Bootstrap = require('libp2p-bootstrap');
 const DHT = require('libp2p-kad-dht');
 const pipe = require('it-pipe')
 const PeerId = require("peer-id");
+const {put_record} = require("./p2p");
 
 const BOOTSTRAP_IDS = [
     'Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
@@ -72,12 +73,18 @@ exports.create_node = async function create_node() {
                                 let result = JSON.parse(msg.toString());
 
                                 if (result.message === "ERR_NOT_FOUND") {
-                                    console.log("> Record does not exist!")
-                                    // keep current record (FIXME: send current record to the cloud)
+                                    console.log("> Record does not exist! Creating...");
+                                    // keep current record
+                                    await exports.put_record(node, node.application)
+                                        .catch(reason => console.error("Put Record:", reason));
                                     return;
                                 } else {
-                                    console.log("> Retrieved Record!")
+                                    console.log("> Retrieved Record!");
                                     node.application = result.message;
+                                    // need to update the peerId since it's a new node
+                                    node.application.peerId = node.peerId.toB58String();
+                                    await exports.put_record(node, node.application)
+                                        .catch(reason => console.error("Put Record:", reason));
                                     return;
                                 }
                             }
@@ -145,7 +152,7 @@ exports.get_discovered = async function (node) {
         let peerId = PeerId.createFromB58String(discoveredElement.id);
         let {message, code} = await _get_username(node, peerId);
 
-        console.log({peerId: discoveredElement.id, message: message, code:code});
+        console.log({peerId: discoveredElement.id, message: message, code: code});
 
         switch (code) {
             case 'ERR_DIALED_SELF':
@@ -175,7 +182,10 @@ exports.put_record = async function (node, record) {
     node.application = record;
     node.application.updated = Date.now();
 
-    return await node.contentRouting.put(new TextEncoder().encode(node.application.username), new TextEncoder().encode(JSON.stringify(record)));
+    return await node.contentRouting.put(
+        new TextEncoder().encode(node.application.username),
+        new TextEncoder().encode(JSON.stringify(record))
+    );
 }
 
 exports.get_or_create_record = async function (node) {
@@ -196,5 +206,23 @@ exports.get_record = async function (node, username) {
                 reason => resolve(reason.code)
             );
     })
+}
+
+exports.get_peer_id_by_username = async function (node, username) {
+    return new Promise(resolve => {
+        node.contentRouting.get(new TextEncoder().encode(username))
+            .then(
+                result => {
+                    let msgStr = new TextDecoder().decode(result.val);
+                    let record = JSON.parse(msgStr);
+
+                    resolve({message: record.peerId});
+                },
+                reason => {
+                    console.log("> SUB", username, " FAILED")
+                    resolve({message: reason.code})
+                }
+            );
+    });
 }
 

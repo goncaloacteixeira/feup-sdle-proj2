@@ -127,5 +127,20 @@ router.get('/records/:username', (req, res) => {
         .then((message) => res.send({message: message}))
 })
 
+router.post('/subscribe', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    // subscribe peer
+    const {message} = p2p.get_peer_id_by_username(node, req.body.username);
+
+    res.send(message)
+
+    // update record
+})
+
 
 module.exports = [router, create];

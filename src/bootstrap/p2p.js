@@ -98,9 +98,13 @@ const get_record = async function (node, username) {
                     let msgStr = new TextDecoder().decode(message.val);
                     let record = JSON.parse(msgStr);
 
+                    console.log("Record found for:", username)
                     resolve({message: record});
                 },
-                reason => resolve({message: reason.code})
+                reason => {
+                    console.log("Record not found for:", username)
+                    resolve({message: reason.code})
+                }
             );
     })
 }

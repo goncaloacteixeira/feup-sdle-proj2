@@ -5,6 +5,8 @@ const {NOISE} = require('libp2p-noise');
 const MPLEX = require('libp2p-mplex');
 const MulticastDNS = require('libp2p-mdns');
 const DHT = require('libp2p-kad-dht');
+const pipe = require('it-pipe')
+
 
 const KEY = process.env.KEY || 'bootstrap1.json';
 const KEY_JSON = require('./keys/' + KEY);
@@ -56,6 +58,24 @@ async function create_node() {
         console.log('Connected to:', connection.remotePeer.toB58String());
     })
 
+    node.handle('/record/1.0.0', ({stream}) => {
+        let data = null;
+        pipe(
+            stream,
+            async function (source) {
+                for await (const msg of source) {
+                    console.log("> GET /record for", msg.toString())
+                    data = msg.toString();
+                    pipe(
+                        [JSON.stringify(await get_record(node, data))],
+                        stream
+                    );
+                    return;
+                }
+            }
+        )
+    })
+
     await node.start();
     console.log('libp2p has started');
 
@@ -67,6 +87,24 @@ async function create_node() {
 
     return node;
 }
+
+
+const get_record = async function (node, username) {
+    return new Promise(resolve => {
+        node.contentRouting.get(new TextEncoder().encode(username))
+            .then(
+                message => {
+                    // Get the record and add the new post
+                    let msgStr = new TextDecoder().decode(message.val);
+                    let record = JSON.parse(msgStr);
+
+                    resolve({message: record});
+                },
+                reason => resolve({message: reason.code})
+            );
+    })
+}
+
 
 create_node()
     .then(node => console.log("Node Started!", node.peerId.toB58String()));

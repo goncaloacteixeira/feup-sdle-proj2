@@ -1,5 +1,6 @@
 const p2p = require('../p2p');
 const express = require("express");
+const PeerId = require("peer-id");
 const router = express.Router();
 
 let node = null;
@@ -116,6 +117,19 @@ router.post('/posts', (req, res) => {
         );
 })
 
+router.get('/record', (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    res.send({message: node.application});
+})
+
+/**
+ * GET Method to retrieve a user's public record
+ */
 router.get('/records/:username', (req, res) => {
     if (!node) {
         return res.status(400).send({
@@ -125,6 +139,70 @@ router.get('/records/:username', (req, res) => {
 
     p2p.get_record(node, req.params.username)
         .then((message) => res.send({message: message}))
+})
+
+/**
+ * POST Method to Subscribe a user
+ * Body:
+ *  - username: string
+ */
+router.post('/subscribe', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    if (!req.body.username) {
+        return res.status(400).send({
+            message: "Invalid Body!"
+        })
+    }
+
+    // subscribe peer
+    let peerIdStr = await p2p.get_peer_id_by_username(node, req.body.username);
+    if (peerIdStr === "ERR_NOT_FOUND") {
+        res.send({message: "ERR_NOT_FOUND"});
+        return;
+    }
+
+    const peerId = await PeerId.createFromB58String(peerIdStr);
+
+    let response = await p2p.subscribe(node, peerId, req.body.username);
+
+    res.send({message: response})
+})
+
+/**
+ * POST Method to Unsubscribe a user
+ * Body:
+ *  - username: string
+ */
+router.post('/unsubscribe', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    if (!req.body.username) {
+        return res.status(400).send({
+            message: "Invalid Body!"
+        })
+    }
+
+    // subscribe peer
+    let peerIdStr = await p2p.get_peer_id_by_username(node, req.body.username);
+    if (peerIdStr === "ERR_NOT_FOUND") {
+        res.send({message: "ERR_NOT_FOUND"});
+        return;
+    }
+
+    const peerId = await PeerId.createFromB58String(peerIdStr);
+
+    let response = await p2p.unsubscribe(node, peerId, req.body.username);
+
+    res.send({message: response})
 })
 
 

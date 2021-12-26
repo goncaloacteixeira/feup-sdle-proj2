@@ -8,6 +8,7 @@
   "dependencies": {
     "cid": "^0.1.0",
     "cids": "^1.1.9",
+    "collect.js": "^4.29.3",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
     "debug": "~2.6.9",

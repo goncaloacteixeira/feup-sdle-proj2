@@ -30,7 +30,8 @@ exports.create_node = async function create_node() {
                     interval: 1000,
                     enabled: true,
                 }
-            }, dht: {
+            },
+            dht: {
                 enabled: true
             }
         }
@@ -51,6 +52,8 @@ exports.create_node = async function create_node() {
 
     node.connectionManager.on('peer:connect', async (connection) => {
         console.log('Connected to:', connection.remotePeer.toB58String());
+
+        node.peerStore.addressBook.add(connection.remotePeer, [connection.remoteAddr]);
     })
 
     node.handle('/username', ({stream}) => {
@@ -109,12 +112,20 @@ exports.get_discovered = async function (node) {
         let peerId = PeerId.createFromB58String(discoveredElement.id);
         let {message, code} = await _get_username(node, peerId);
 
+        console.log({peerId: discoveredElement.id, message: message, code:code});
+
         switch (code) {
             case 'ERR_DIALED_SELF':
                 discoveredElement.username = node.application.username;
                 break;
-            default:
+            case 'ERR_UNSUPPORTED_PROTOCOL':
+                discoveredElement.username = 'bootstrap node';
+                break;
+            case 'OK':
                 discoveredElement.username = message;
+                break;
+            default:
+                break;
         }
     }
 

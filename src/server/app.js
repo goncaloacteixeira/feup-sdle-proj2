@@ -45,6 +45,6 @@ app.use(function(err, req, res, next) {
 });
 
 create(process.env.USERNAME || 'unknown')
-    .then(_ => console.log("Node Created!"));
+    .then(node => console.log("Node Created!", node.peerId.toB58String()));
 
 module.exports = app;

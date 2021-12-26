@@ -117,6 +117,21 @@ exports.create_node = async function create_node() {
         )
     })
 
+    node.handle('/unsubscribe/1.0.0', ({stream}) => {
+        pipe(
+            stream,
+            async function (source) {
+                for await (const msg of source) {
+                    // remove subscriber (idempotent)
+                    node.application.subscribers = node.application.subscribers.filter(function (value) {
+                        return value !== msg.toString();
+                    });
+                    await exports.put_record(node, node.application);
+                }
+            }
+        )
+    })
+
     await node.start();
     console.log('libp2p has started');
 
@@ -254,6 +269,24 @@ exports.subscribe = async function (node, peerId, username) {
                         node.application.subscribed.push(username);
                         await exports.put_record(node, node.application);
                     }
+                    resolve("OK");
+                },
+                _ => resolve("ERR")
+            );
+    });
+}
+
+exports.unsubscribe = async function (node, peerId, username) {
+    return new Promise(resolve => {
+        node.dialProtocol(peerId, ['/unsubscribe/1.0.0'])
+            .then(
+                async ({stream}) => {
+                    await pipe([node.application.username], stream);
+                    // idempotent operation
+                    node.application.subscribed = node.application.subscribed.filter(function (value) {
+                        return value !== username;
+                    });
+                    await exports.put_record(node, node.application);
                     resolve("OK");
                 },
                 _ => resolve("ERR")

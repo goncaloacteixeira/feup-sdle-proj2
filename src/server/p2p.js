@@ -24,7 +24,8 @@ exports.create_node = async function create_node() {
                 autoDial: true,
                 [Bootstrap.tag]: {
                     list: [
-                        '/ip4/127.0.0.1/tcp/8999/p2p/Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb'
+                        '/ip4/127.0.0.1/tcp/8998/p2p/Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
+                        '/ip4/127.0.0.1/tcp/8999/p2p/QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs'
                     ],
                     interval: 1000,
                     enabled: true,

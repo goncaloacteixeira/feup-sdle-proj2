@@ -31,35 +31,7 @@ router.get('/info', async (req, res) => {
         });
     }
 
-    const discovered = [];
-
-    node.peerStore.addressBook.data.forEach((v, k) => {
-        let node = {
-            id: k,
-        }
-
-        let addresses = []
-        v.addresses.forEach((address) => {
-            addresses.push(address.multiaddr.toString());
-        })
-        node.addresses = addresses;
-
-        discovered.push(node);
-    })
-
-    // usernames
-    for (let discoveredElement of discovered) {
-        let peerId = PeerId.createFromB58String(discoveredElement.id);
-        let {message, code} = await _get_username(peerId);
-
-        switch (code) {
-            case 'ERR_DIALED_SELF':
-                discoveredElement.username = node.application.username;
-                break;
-            default:
-                discoveredElement.username = message;
-        }
-    }
+    const discovered = await p2p.get_discovered(node);
 
     res.send({discovered: discovered, data: node.application});
 })
@@ -88,31 +60,11 @@ router.get('/username/:peerid', (req, res) => {
             message: "Node not Started!"
         });
     }
-    console.log(req.params);
 
-    // needs try/catch
-    let peerId = PeerId.createFromB58String(req.params.peerid);
-    _get_username(peerId).then((response) => res.send(response));
+    p2p.get_username(node, req.params.peerid)
+        .then((data) => res.send(data));
 })
 
-
-async function _get_username(peerId) {
-    return new Promise(resolve => {
-        node.dialProtocol(peerId, ['/username'])
-            .then(async ({stream}) => {
-                await pipe(
-                    stream,
-                    async function (source) {
-                        for await (const msg of source) {
-                            // first one since the other side just sends one value -> username
-                            resolve({message: msg.toString(), code: 'OK'});
-                            return;
-                        }
-                    }
-                )
-            }, reason => resolve({message: "unreachable node", code: reason.code}));
-    });
-}
 
 /**
  * POST method to update/create the public record for the user with a new post

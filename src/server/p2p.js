@@ -10,6 +10,7 @@ const pipe = require('it-pipe')
 const {map} = require('streaming-iterables')
 const {toBuffer} = require('it-buffer')
 const delay = require("delay");
+const PeerId = require("peer-id");
 
 exports.create_node = async function create_node() {
     const node = await Libp2p.create({
@@ -25,15 +26,11 @@ exports.create_node = async function create_node() {
         }, config: {
             peerDiscovery: {
                 autoDial: true,
-                [MulticastDNS.tag]: {
-                    interval: 1000,
-                    enabled: false
-                },
                 [Bootstrap.tag]: {
                     list: [
                         '/ip4/127.0.0.1/tcp/8999/p2p/Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb'
                     ],
-                    interval: 2000,
+                    interval: 1000,
                     enabled: true,
                 }
             }, dht: {
@@ -55,45 +52,8 @@ exports.create_node = async function create_node() {
         console.log('peer:discovery', peer.toB58String());
     });
 
-    // let latest = false;
-
     node.connectionManager.on('peer:connect', async (connection) => {
         console.log('Connected to:', connection.remotePeer.toB58String());
-
-        // give some time to get the record
-        // await delay(2000);
-
-        /*if (!latest) {
-            // Search for the record, if it exists then do nothing, if not invoke a PUT operation
-            node.contentRouting.get(new TextEncoder().encode(node.application.username))
-                .then(message => {
-                    // Get the record and add the new post
-                    let msgStr = new TextDecoder().decode(message.val);
-                    let record = JSON.parse(msgStr);
-
-                    if (record.updated <= node.application.updated) {
-                        console.log({message: "OK", description: 'WILL NOT UPDATE'});
-                        latest = true;
-                        return;
-                    }
-
-                    node.application = record;
-                    node.application.peerId = node.peerId.toB58String();
-                    latest = true;
-
-                    console.log({message: 'OK', description: 'RETRIEVED'});
-                }, _ => {
-                    node.application.updated = Date.now();
-
-                    node.contentRouting.put(new TextEncoder().encode(node.application.username),
-                        new TextEncoder().encode(JSON.stringify(node.application)),
-                        {minPeers: 1})
-                        .then(
-                            _ => console.log({message: 'OK', description: 'CREATED'}),
-                            reason => console.log({message: reason.code, description: reason.message})
-                        );
-                });
-        }*/
     })
 
     node.handle('/username', ({stream}) => {
@@ -111,3 +71,63 @@ exports.create_node = async function create_node() {
 
     return node;
 }
+
+async function _get_username(node, peerId) {
+    return new Promise(resolve => {
+        node.dialProtocol(peerId, ['/username'])
+            .then(async ({stream}) => {
+                await pipe(
+                    stream,
+                    async function (source) {
+                        for await (const msg of source) {
+                            // first one since the other side just sends one value -> username
+                            resolve({message: msg.toString(), code: 'OK'});
+                            return;
+                        }
+                    }
+                )
+            }, reason => resolve({message: "unreachable node", code: reason.code}));
+    });
+}
+
+exports.get_discovered = async function (node) {
+    const discovered = [];
+
+    node.peerStore.addressBook.data.forEach((v, k) => {
+        let node = {
+            id: k,
+        }
+
+        let addresses = []
+        v.addresses.forEach((address) => {
+            addresses.push(address.multiaddr.toString());
+        })
+        node.addresses = addresses;
+
+        discovered.push(node);
+    })
+
+    // usernames
+    for (let discoveredElement of discovered) {
+        let peerId = PeerId.createFromB58String(discoveredElement.id);
+        let {message, code} = await _get_username(node, peerId);
+
+        switch (code) {
+            case 'ERR_DIALED_SELF':
+                discoveredElement.username = node.application.username;
+                break;
+            default:
+                discoveredElement.username = message;
+        }
+    }
+
+    return discovered;
+}
+
+exports.get_username = async function (node, idStr) {
+    // needs try/catch
+    let peerId = PeerId.createFromB58String(idStr);
+    return await _get_username(peerId);
+}
+
+

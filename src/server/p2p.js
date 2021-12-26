@@ -100,6 +100,22 @@ exports.create_node = async function create_node() {
         pipe([node.application.username], stream)
     })
 
+    node.handle('/subscribe/1.0.0', ({stream}) => {
+        pipe(
+            stream,
+            async function (source) {
+                for await (const msg of source) {
+                    // add new subscriber (idempotent)
+                    if (!node.application.subscribers.contains(msg.toString())) {
+                        node.application.subscribers.push(msg.toString());
+                        // update record
+                        await exports.put_record(node, node.application);
+                    }
+                }
+            }
+        )
+    })
+
     await node.start();
     console.log('libp2p has started');
 
@@ -216,13 +232,28 @@ exports.get_peer_id_by_username = async function (node, username) {
                     let msgStr = new TextDecoder().decode(result.val);
                     let record = JSON.parse(msgStr);
 
-                    resolve({message: record.peerId});
+                    resolve(record.peerId);
                 },
                 reason => {
-                    console.log("> SUB", username, " FAILED")
-                    resolve({message: reason.code})
+                    console.log("> SUB", username, "FAILED")
+                    resolve(reason.code)
                 }
             );
+    });
+}
+
+exports.subscribe = async function (node, peerId, username) {
+    return new Promise(resolve => {
+        node.dialProtocol(peerId, ['/subscribe/1.0.0'])
+            .then(async ({stream}) => {
+                await pipe([node.application.username], stream);
+                // idempotent operation
+                if (!node.application.subscribed.contains(username)) {
+                    node.application.subscribed.push(username);
+                    await exports.put_record(node, node.application);
+                }
+                resolve("OK");
+            }, _ => resolve("ERR"));
     });
 }
 

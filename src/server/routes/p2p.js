@@ -1,5 +1,6 @@
 const p2p = require('../p2p');
 const express = require("express");
+const PeerId = require("peer-id");
 const router = express.Router();
 
 let node = null;
@@ -134,12 +135,24 @@ router.post('/subscribe', async (req, res) => {
         });
     }
 
+    if (!req.body.username) {
+        return res.status(400).send({
+            message: "Invalid Body!"
+        })
+    }
+
     // subscribe peer
-    const {message} = p2p.get_peer_id_by_username(node, req.body.username);
+    let peerIdStr = await p2p.get_peer_id_by_username(node, req.body.username);
+    if (peerIdStr === "ERR_NOT_FOUND") {
+        res.send({message: "ERR_NOT_FOUND"});
+        return;
+    }
 
-    res.send(message)
+    const peerId = await PeerId.createFromB58String(peerIdStr);
 
-    // update record
+    let response = await p2p.subscribe(node, peerId, req.params.username);
+
+    res.send({message: response})
 })
 
 

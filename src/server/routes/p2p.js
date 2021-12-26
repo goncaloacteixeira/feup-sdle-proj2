@@ -150,7 +150,7 @@ router.post('/subscribe', async (req, res) => {
 
     const peerId = await PeerId.createFromB58String(peerIdStr);
 
-    let response = await p2p.subscribe(node, peerId, req.params.username);
+    let response = await p2p.subscribe(node, peerId, req.body.username);
 
     res.send({message: response})
 })

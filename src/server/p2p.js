@@ -8,6 +8,7 @@ const DHT = require('libp2p-kad-dht');
 const pipe = require('it-pipe')
 const PeerId = require("peer-id");
 const {put_record} = require("./p2p");
+const collect = require('collect.js');
 
 const BOOTSTRAP_IDS = [
     'Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
@@ -106,7 +107,7 @@ exports.create_node = async function create_node() {
             async function (source) {
                 for await (const msg of source) {
                     // add new subscriber (idempotent)
-                    if (!node.application.subscribers.contains(msg.toString())) {
+                    if (!collect(node.application.subscribers).contains(msg.toString())) {
                         node.application.subscribers.push(msg.toString());
                         // update record
                         await exports.put_record(node, node.application);
@@ -245,15 +246,17 @@ exports.get_peer_id_by_username = async function (node, username) {
 exports.subscribe = async function (node, peerId, username) {
     return new Promise(resolve => {
         node.dialProtocol(peerId, ['/subscribe/1.0.0'])
-            .then(async ({stream}) => {
-                await pipe([node.application.username], stream);
-                // idempotent operation
-                if (!node.application.subscribed.contains(username)) {
-                    node.application.subscribed.push(username);
-                    await exports.put_record(node, node.application);
-                }
-                resolve("OK");
-            }, _ => resolve("ERR"));
+            .then(
+                async ({stream}) => {
+                    await pipe([node.application.username], stream);
+                    // idempotent operation
+                    if (!collect(node.application.subscribed).contains(username)) {
+                        node.application.subscribed.push(username);
+                        await exports.put_record(node, node.application);
+                    }
+                    resolve("OK");
+                },
+                _ => resolve("ERR")
+            );
     });
 }
-

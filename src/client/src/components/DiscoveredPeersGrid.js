@@ -25,12 +25,12 @@ const columns = [
 
 export default function DiscoveredPeersGrid(props) {
     return (
-        <div style={{height: 400, width: '100%'}}>
+        <div style={{height: 600, width: '100%'}}>
             <DataGrid
                 rows={props.peers}
                 columns={columns}
                 pageSize={5}
-                rowHeight={75}
+                rowHeight={150}
                 rowsPerPageOptions={[5]}
                 disableSelectionOnClick
             />

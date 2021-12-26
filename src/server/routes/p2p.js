@@ -13,6 +13,7 @@ let node = null;
 async function create(username) {
     node = await p2p.create_node();
     node.application.username = username;
+    return node;
 }
 
 /**

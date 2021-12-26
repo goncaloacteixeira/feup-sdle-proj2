@@ -2,14 +2,10 @@ const Libp2p = require('libp2p');
 const TCP = require('libp2p-tcp');
 const {NOISE} = require('libp2p-noise');
 const MPLEX = require('libp2p-mplex');
-const MulticastDNS = require('libp2p-mdns');
 const Gossipsub = require('libp2p-gossipsub');
 const Bootstrap = require('libp2p-bootstrap');
 const DHT = require('libp2p-kad-dht');
 const pipe = require('it-pipe')
-const {map} = require('streaming-iterables')
-const {toBuffer} = require('it-buffer')
-const delay = require("delay");
 const PeerId = require("peer-id");
 
 exports.create_node = async function create_node() {
@@ -130,4 +126,30 @@ exports.get_username = async function (node, idStr) {
     return await _get_username(peerId);
 }
 
+exports.put_record = async function (node, record) {
+    node.application = record;
+    node.application.updated = Date.now();
+
+    return await node.contentRouting.put(new TextEncoder().encode(node.application.username), new TextEncoder().encode(JSON.stringify(record)));
+}
+
+exports.get_or_create_record = async function (node) {
+    return await node.contentRouting.get(new TextEncoder().encode(node.application.username));
+}
+
+exports.get_record = async function (node, username) {
+    return new Promise(resolve => {
+        node.contentRouting.get(new TextEncoder().encode(username))
+            .then(
+                message => {
+                    // Get the record and add the new post
+                    let msgStr = new TextDecoder().decode(message.val);
+                    let record = JSON.parse(msgStr);
+
+                    resolve(record);
+                },
+                reason => resolve(reason.code)
+            );
+    })
+}
 

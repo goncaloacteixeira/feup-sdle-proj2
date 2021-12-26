@@ -1,11 +1,6 @@
 const p2p = require('../p2p');
 const express = require("express");
 const router = express.Router();
-const {CID} = require('multiformats/cid')
-const json = require('multiformats/codecs/json')
-const {sha256} = require('multiformats/hashes/sha2')
-const pipe = require("it-pipe");
-const PeerId = require("peer-id");
 
 let node = null;
 
@@ -87,18 +82,14 @@ router.post('/posts', (req, res) => {
     };
 
     const putRecord = (record) => {
-        node.application = record;
-        node.application.updated = Date.now();
-
-        node.contentRouting.put(new TextEncoder().encode(node.application.username), new TextEncoder().encode(JSON.stringify(record)),
-            {minPeers: 4})
+        p2p.put_record(node, record)
             .then(
                 _ => res.send({message: 'success', record: record}),
                 reason => res.send({message: reason.code, record: record})
             );
     }
 
-    node.contentRouting.get(new TextEncoder().encode(node.application.username))
+    p2p.get_or_create_record(node)
         .then(
             message => {
                 // Get the record and add the new post
@@ -131,19 +122,8 @@ router.get('/records/:username', (req, res) => {
         });
     }
 
-    node.contentRouting.get(new TextEncoder().encode(req.params.username))
-        .then(
-            message => {
-                // Get the record and add the new post
-                let msgStr = new TextDecoder().decode(message.val);
-                let record = JSON.parse(msgStr);
-
-                res.send({message: record});
-            },
-            reason => {
-                res.send({message: reason.code})
-            }
-        );
+    p2p.get_record(node, req.params.username)
+        .then((message) => res.send({message: message}))
 })
 
 

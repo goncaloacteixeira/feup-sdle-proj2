@@ -130,6 +130,10 @@ exports.create_node = async function create_node() {
                 }
             }
         )
+    });
+
+    node.handle('/echo/1.0.0', ({stream}) => {
+        pipe(['echo'], stream);
     })
 
     await node.start();
@@ -292,4 +296,23 @@ exports.unsubscribe = async function (node, peerId, username) {
                 _ => resolve("ERR")
             );
     });
+}
+
+exports.echo = async function (node, peerId) {
+    return new Promise(resolve => {
+        node.dialProtocol(peerId, ['/echo/1.0.0'])
+            .then(async ({stream}) => {
+                pipe(
+                    stream,
+                    async function (source) {
+                        for await (const msg of source) {
+                            if (msg.toString() === "echo") {
+                                resolve(true);
+                                return;
+                            }
+                        }
+                    }
+                )
+            }, _ => resolve(false));
+    })
 }

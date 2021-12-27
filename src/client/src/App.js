@@ -7,6 +7,7 @@ import Feed from "./components/Feed";
 import NewPostForm from "./components/NewPostForm";
 import Button from "@mui/material/Button";
 import axios from "axios";
+import SidePanel from "./components/SidePanel";
 
 function App() {
     const [data, setData] = React.useState(null);
@@ -47,8 +48,8 @@ function App() {
                 </Alert>
             }
             <Grid container>
-                <Grid item style={{backgroundColor: "blue"}} xs={3}>
-                    panel
+                <Grid item p={4} xs={3}>
+                    <SidePanel />
                 </Grid>
                 <Grid p={4} item xs={9}>
                     <NewPostForm />

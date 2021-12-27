@@ -5,11 +5,12 @@ const {NOISE} = require('libp2p-noise');
 const MPLEX = require('libp2p-mplex');
 const MulticastDNS = require('libp2p-mdns');
 const DHT = require('libp2p-kad-dht');
-const pipe = require('it-pipe')
+const pipe = require('it-pipe');
 
 
 const KEY = process.env.KEY || 'bootstrap1.json';
 const KEY_JSON = require('./keys/' + KEY);
+const PORT = process.env.PORT || 8998;
 
 /*
  * » BOOTSTRAP NODE «
@@ -29,7 +30,7 @@ async function create_node() {
     const node = await Libp2p.create({
         peerId,
         addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/' + process.env.PORT]
+            listen: ['/ip4/127.0.0.1/tcp/' + PORT]
         }, modules: {
             transport: [TCP],
             connEncryption: [NOISE],

@@ -193,5 +193,31 @@ router.post('/unsubscribe', async (req, res) => {
     res.send({message: response})
 })
 
+/**
+ * GET current subscribers
+ */
+router.get('/subscribers', (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    res.send({message: node.application.subscribers});
+})
+
+/**
+ * GET current subscribed users
+ */
+router.get('/subscribed', (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    res.send({message: node.application.subscribed});
+})
+
 
 module.exports = [router, create];

@@ -5,6 +5,8 @@ import {Alert, AppBar, FormControl, Grid, InputLabel, OutlinedInput, Toolbar} fr
 import DevModal from "./components/DevModal";
 import Feed from "./components/Feed";
 import NewPostForm from "./components/NewPostForm";
+import Button from "@mui/material/Button";
+import axios from "axios";
 
 function App() {
     const [data, setData] = React.useState(null);
@@ -15,11 +17,34 @@ function App() {
             .then((data) => setData(data.data));
     }, []);
 
+    // method to export a record to a downloadable JSON file
+    const exportRecord = () => {
+        axios.get('/exports/record')
+            .then((result) => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(result.data, null, 2));
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href",     dataStr     );
+                dlAnchorElem.setAttribute("download", "record.json");
+                dlAnchorElem.click();
+                dlAnchorElem.remove();
+            });
+    }
+
     return (
         <div>
             <CustomAppBar/>
             {!data ? 'Starting node...' :
-                <Alert severity="success">Node Started! Current PeerId: {data.peerId}<DevModal /></Alert>
+                <Alert severity="success">
+                    Node Started! Current PeerId: {data.peerId}
+                    <Grid container>
+                        <Grid item>
+                            <DevModal />
+                        </Grid>
+                        <Grid item>
+                            <Button onClick={exportRecord}>Export Record</Button>
+                        </Grid>
+                    </Grid>
+                </Alert>
             }
             <Grid container>
                 <Grid item style={{backgroundColor: "blue"}} xs={3}>

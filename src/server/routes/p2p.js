@@ -219,5 +219,9 @@ router.get('/subscribed', (req, res) => {
     res.send({message: node.application.subscribed});
 })
 
+function get_node() {
+    return node;
+}
 
-module.exports = [router, create];
+
+module.exports = [router, create, get_node];

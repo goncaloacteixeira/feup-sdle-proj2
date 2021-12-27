@@ -196,27 +196,58 @@ router.post('/unsubscribe', async (req, res) => {
 /**
  * GET current subscribers
  */
-router.get('/subscribers', (req, res) => {
+router.get('/subscribers', async (req, res) => {
     if (!node) {
         return res.status(400).send({
             message: "Node not Started!"
         });
     }
 
-    res.send({message: node.application.subscribers});
+    const data = [];
+
+    for (const subscriber of node.application.subscribers) {
+        const peerIdStr = await p2p.get_peer_id_by_username(node, subscriber);
+        if (peerIdStr === "ERR_NOT_FOUND") {
+            data.push({username: subscriber, online: false});
+            continue;
+        }
+
+        const peerId = await PeerId.createFromB58String(peerIdStr);
+        const online = await p2p.echo(node, peerId);
+
+        data.push({username: subscriber, online: online});
+    }
+
+    res.send({message: data});
 })
 
 /**
  * GET current subscribed users
  */
-router.get('/subscribed', (req, res) => {
+router.get('/subscribed', async (req, res) => {
     if (!node) {
         return res.status(400).send({
             message: "Node not Started!"
         });
     }
 
-    res.send({message: node.application.subscribed});
+    const data = [];
+
+    for (const sub of node.application.subscribed) {
+        const peerIdStr = await p2p.get_peer_id_by_username(node, sub);
+        if (peerIdStr === "ERR_NOT_FOUND") {
+            data.push({username: sub, online: false});
+            continue;
+        }
+
+        const peerId = await PeerId.createFromB58String(peerIdStr);
+        const online = await p2p.echo(node, peerId);
+
+        data.push({username: sub, online: online});
+    }
+
+    res.send({message: data});
+
 })
 
 function get_node() {

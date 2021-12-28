@@ -80,7 +80,15 @@ export default function SidePanel(props) {
         <Grid container>
             <Grid item xs={12}>
                 <h2>Users</h2>
-                <List dense sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                <List dense sx={{
+                    width: '100%',
+                    maxWidth: 360,
+                    bgcolor: 'background.paper',
+                    position: 'relative',
+                    overflow: 'auto',
+                    maxHeight: 400,
+                    '& ul': { padding: 0 },
+                }}>
                     {removeBootstrapNodes().map((value, index) => {
                         const labelId = `checkbox-list-secondary-label-${value.username}`;
                         return (

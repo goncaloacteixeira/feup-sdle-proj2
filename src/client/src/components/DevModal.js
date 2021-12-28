@@ -31,7 +31,6 @@ export default function DevModal() {
         axios.get('/p2p/info')
             .then(res => {
                 setData(res.data);
-                console.log(res.data);
             });
     };
     const handleClose = () => setOpen(false);

@@ -1,45 +1,64 @@
 import React from "react";
-import {Chip, CircularProgress, Grid} from "@mui/material";
+import {Grid, List, ListItem, ListItemButton, ListItemAvatar, Avatar, ListItemText, Button, Link } from "@mui/material";
 
-/*************************
- *
- *
- * continua aqui bidon :)
- *
- */
 export default function SidePanel(props) {
-    const [subscribers, setSubscribers] = React.useState(null);
-    const [subscribed, setSubscribed] = React.useState(null);
+    console.log(props);
 
-    React.useEffect(() => {
-        fetch('/p2p/subscribers')
-            .then((res) => res.json())
-            .then(data => setSubscribers(data.message));
-    }, []);
+    //This will change after firebase and we can obtain all users, for now not showing current user or bootstraps
+    const removeBootstrapNodes = () => {
+        let users = [];
+        props.info.discovered.map((value) => {
+            if(value.username !== 'bootstrap node' && value.username !== props.info.data.username) {
+                users.push(value);
+            }
+        })
+        return users;
+    }
 
-    React.useEffect(() => {
-        fetch('/p2p/subscribed')
-            .then((res) => res.json())
-            .then(data => setSubscribed(data.message));
-    }, []);
+    const handleClick = (e) => {
+        e.preventDefault();
+        //TODO => make post request 
+
+    }
+
+    const isSubscribed = (username) => {
+        let flag = false;
+        props.info.data.subscribed.map((sub) => {
+            if(sub === username) {
+                flag = true;
+            }
+        })
+
+        return flag;
+    }
 
     return (
         <Grid container>
             <Grid item xs={12}>
-                <Grid container justifyContent="space-around">
-                    <Grid item>
-                        {!subscribed ?
-                            <CircularProgress color="inherit" /> :
-                            <Chip clickable label={subscribed.length + " Subscribed"} />
-                        }
-                    </Grid>
-                    <Grid item>
-                        {!subscribers ?
-                            <CircularProgress color="inherit" /> :
-                            <Chip clickable variant="outlined" label={subscribers.length + " Subscribers"} />
-                        }
-                    </Grid>
-                </Grid>
+                <h2>Users</h2>
+                <List dense sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                    {removeBootstrapNodes().map((value) => {
+                        const labelId = `checkbox-list-secondary-label-${value.username}`;
+                        return (
+                            <ListItem
+                                key={value.username}
+                                secondaryAction={
+                                    <Button variant={ isSubscribed(value.username) ? 'outlined' : 'contained' } onClick={(e) => { handleClick(e) }} size="small" id={value.username}>{ isSubscribed(value.username) ? 'Following' : 'Follow' }</Button>
+                                }
+                                disablePadding
+                            >
+                                <ListItemButton>
+                                <ListItemAvatar>
+                                    <Avatar>H</Avatar>
+                                </ListItemAvatar>
+                                <ListItemText id={labelId}>
+                                    <Link href="#" color="inherit" underline="hover">{value.username}</Link>
+                                </ListItemText>
+                                </ListItemButton>
+                            </ListItem>
+                        );
+                    })}
+                </List>
             </Grid>
         </Grid>
     );

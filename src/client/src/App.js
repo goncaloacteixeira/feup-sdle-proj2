@@ -10,12 +10,12 @@ import axios from "axios";
 import SidePanel from "./components/SidePanel";
 
 function App() {
-    const [data, setData] = React.useState(null);
+    const [info, setInfo] = React.useState(null);
 
     React.useEffect(() => {
         fetch("/p2p/info")
             .then((res) => res.json())
-            .then((data) => setData(data.data));
+            .then((data) => setInfo(data));
     }, []);
 
     // method to export a record to a downloadable JSON file
@@ -34,9 +34,9 @@ function App() {
     return (
         <div>
             <CustomAppBar/>
-            {!data ? 'Starting node...' :
+            {!info ? 'Starting node...' :
                 <Alert severity="success">
-                    Node Started! Current PeerId: {data.peerId}
+                    Node Started! Current PeerId: {info.data.peerId}
                     <Grid container>
                         <Grid item>
                             <DevModal />
@@ -49,7 +49,9 @@ function App() {
             }
             <Grid container>
                 <Grid item p={4} xs={3}>
-                    <SidePanel />
+                    {
+                        !info ? 'Finding users...':  <SidePanel info={info}/>
+                    }
                 </Grid>
                 <Grid p={4} item xs={9}>
                     <NewPostForm />

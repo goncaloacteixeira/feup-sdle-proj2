@@ -1,0 +1,7 @@
+.customLink {
+    color: black !important;
+}
+
+.customLink:hover {
+    cursor: pointer;
+}

@@ -1,12 +1,20 @@
 import React from "react";
-import { Container, Grid, Button, Modal } from "@mui/material";
+import { Container, Grid, Link } from "@mui/material";
 import { useParams } from 'react-router-dom';
 
+import '../styles/profile.css';
 import CustomAppBar from "../components/AppBar";
 import LetterAvatar from "../components/LetterAvatar";
+import SubModal from "../components/SubModal";
 
 export default function ProfilePage() {
     const { username } = useParams();
+
+    const [followersOpen, setFollowersOpen] = React.useState(false);
+    const [followingOpen, setFollowingOpen] = React.useState(false);
+
+    const handleFollowersOpen = () => setFollowersOpen(true);
+    const handleFollowingOpen = () => setFollowingOpen(true);
 
     const [record, setRecord] = React.useState(null);
 
@@ -15,6 +23,14 @@ export default function ProfilePage() {
             .then((res) => res.json())
             .then((res) => setRecord(res.message));
     }, []);
+
+    let followersList;
+    let followingList;
+    if (record) {
+        followersList = record.subscribers;
+        followingList = record.subscribed;
+    }
+    
 
     return (
         <div className="ProfilePage">
@@ -36,10 +52,12 @@ export default function ProfilePage() {
                                             <span><b>{ record.posts.length }</b> posts</span>
                                         </Grid>
                                         <Grid item>
-                                            <span><b>{ record.subscribers.length }</b> followers</span>
+                                            <Link className="customLink" underline="none" onClick={handleFollowersOpen}><b>{ followersList.length }</b> followers</Link>
+                                            <SubModal open={followersOpen} handleClose={() => setFollowersOpen(false)} usersList={followersList} followingList={followersList} ></SubModal>
                                         </Grid>
                                         <Grid item>
-                                            <span><b>{ record.subscribed.length }</b> following</span>
+                                            <Link className="customLink" underline="none" onClick={handleFollowingOpen}><b>{ followersList.length }</b> following</Link>
+                                            <SubModal open={followingOpen} handleClose={() => setFollowingOpen(false)} usersList={followersList} followingList={followersList} ></SubModal>
                                         </Grid>
                                     </Grid>
                                 </Grid>

@@ -68,37 +68,12 @@ router.post('/posts', (req, res) => {
         timestamp: Date.now()
     };
 
-    const putRecord = (record) => {
-        p2p.put_record(node, record)
-            .then(
-                _ => res.send({message: 'success', record: record}),
-                reason => res.send({message: reason.code, record: record})
-            );
-    }
+    node.application.posts.push(post);
 
-    p2p.get_or_create_record(node)
+    p2p.put_record(node, node.application)
         .then(
-            message => {
-                // Get the record and add the new post
-                let msgStr = new TextDecoder().decode(message.val);
-                let record = JSON.parse(msgStr);
-
-                record.posts.push(post);
-
-                putRecord(record);
-            },
-            _ => {
-                // Get the record and add the new post
-                let record = {
-                    posts: [post],
-                    subscribers: [],
-                    subscribed: [],
-                    username: node.application.username,
-                    peerId: node.peerId.toB58String()
-                };
-
-                putRecord(record);
-            }
+            _ => res.send({message: 'success', record: node.application}),
+            reason => res.send({message: reason.code, record: node.application})
         );
 })
 
@@ -113,21 +88,7 @@ router.get('/record', (req, res) => {
     }
 
     res.send({message: node.application});
-})
-
-/**
- * GET Method to retrieve a user's public record
- */
-router.get('/records/:username', (req, res) => {
-    if (!node) {
-        return res.status(400).send({
-            message: "Node not Started!"
-        });
-    }
-
-    p2p.get_record(node, req.params.username)
-        .then((message) => res.send({message: message}))
-})
+});
 
 /**
  * POST Method to Subscribe a user
@@ -247,8 +208,35 @@ router.get('/subscribed', async (req, res) => {
     }
 
     res.send({message: data});
+});
 
+
+router.post('/test', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    let username = req.body.username;
+    let message = req.body.message;
+
+    await node.pubsub.subscribe(username);
+    await node.pubsub.publish(username, new TextEncoder().encode(message));
+
+    res.send({result: "OK", username: username, message: message});
 })
+
+router.get('/providers/:username', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    res.send({message: await p2p.get_providers(node, req.params.username)});
+})
+
 
 function get_node() {
     return node;

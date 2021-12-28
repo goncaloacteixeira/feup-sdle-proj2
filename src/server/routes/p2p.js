@@ -241,6 +241,16 @@ router.post('/test', async (req, res) => {
     res.send({result: "OK", username: username, message: message});
 })
 
+router.get('/providers/:username', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    res.send({message: await p2p.get_providers(node, req.params.username)});
+})
+
 
 function get_node() {
     return node;

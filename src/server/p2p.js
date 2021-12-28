@@ -14,6 +14,7 @@ const {CID} = require('multiformats/cid');
 const json = require('multiformats/codecs/json');
 const {sha256} = require('multiformats/hashes/sha2');
 const all = require("it-all");
+const delay = require("delay");
 
 const BOOTSTRAP_IDS = [
     'Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
@@ -67,42 +68,94 @@ exports.create_node = async function create_node() {
         console.log('peer:discovery', peer.toB58String());
     });
 
+    let locked = false;
+
     node.connectionManager.on('peer:connect', async (connection) => {
         console.log('Connected to:', connection.remotePeer.toB58String());
 
         // if the connection was established to a Bootstrap Peer, then it should have
         // the public record available if it does exist for this user, then it should
         // update the record
-        /*if (BOOTSTRAP_IDS.includes(connection.remotePeer.toB58String())) {
-            node.dialProtocol(connection.remotePeer, ['/record/1.0.0'])
-                .then(({stream}) => {
-                    pipe(
-                        [node.application.username],
-                        stream,
-                        async function (source) {
-                            for await (const msg of source) {
-                                let result = JSON.parse(msg.toString());
+        if (locked) return;
+        locked = true;
 
-                                if (result.message === "ERR_NOT_FOUND") {
-                                    console.log("> Record does not exist! Creating...");
-                                    // keep current record
-                                    await exports.put_record(node, node.application)
-                                        .catch(reason => console.error("Put Record:", reason));
-                                    return;
-                                } else {
-                                    console.log("> Retrieved Record!");
-                                    node.application = result.message;
-                                    // need to update the peerId since it's a new node
-                                    node.application.peerId = node.peerId.toB58String();
-                                    await exports.put_record(node, node.application)
-                                        .catch(reason => console.error("Put Record:", reason));
-                                    return;
-                                }
-                            }
+        if (BOOTSTRAP_IDS.includes(connection.remotePeer.toB58String())) {
+            await delay(2000);
+
+            const cid = await username_cid(node.application.username);
+            let providers;
+            try {
+                providers = await all(node.contentRouting.findProviders(cid, {timeout: 5000}));
+            } catch (_) {
+                console.log("Could not find providers for own record");
+                providers = [];
+            }
+
+            if (providers.length === 0) {
+                console.log("Record not found! Creating...")
+                RECORDS.set(cid.toString(), node.application);
+                await node.contentRouting.provide(cid)
+                    .catch(e => console.warn("Providing own record:", e.code));
+                console.log("> Providing own record");
+
+                return;
+            }
+
+            console.log("Found", providers.length, "providers for own record:", providers.map(v => v.id.toB58String()));
+
+            let done = false;
+            let record = null;
+            let i = 0;
+            while (!done && i < providers.length) {
+                let dial = null;
+
+                try {
+                    dial = await node.dialProtocol(providers[i++].id, ['/record/1.0.0']);
+                } catch (e) {
+                    continue;
+                }
+
+                const {stream} = dial;
+                await pipe([cid.toString()], stream);
+                await pipe(
+                    stream,
+                    async function (source) {
+                        const allItems = [];
+                        for await (const item of source) {
+                            allItems.push(item.toString());
                         }
-                    )
-                })
-        }*/
+
+                        record = JSON.parse(allItems[0]);
+                        RECORDS.set(cid.toString(), record);
+                        node.application = record;
+                        console.log("Retrieved own record from:", providers[i - 1].id.toB58String());
+                        await node.contentRouting.provide(cid);
+                        console.log("> Providing own record");
+                        done = true;
+                    }
+                );
+            }
+
+            if (record === null) {
+                console.log("Record not found! Creating...")
+                RECORDS.set(cid.toString(), node.application);
+                await node.contentRouting.provide(cid)
+                    .catch((e) => console.warn("Providing:", e.code));
+                console.log("> Providing own record");
+            }
+
+            // for each subscribed user, add a new handler right?
+            for (const username of node.application.subscribed) {
+                await node.pubsub.subscribe(username);
+                console.log("Subscribed to Topic:", username);
+                node.pubsub.on(username, async (msg) => {
+                    console.log(`[PUBSUB] Record for:${username} updated!`);
+                    let record = JSON.parse(new TextDecoder().decode(msg.data));
+                    const cid = await username_cid(record.username);
+                    RECORDS.set(cid.toString(), record);
+                });
+            }
+        }
 
         node.peerStore.addressBook.add(connection.remotePeer, [connection.remoteAddr]);
     })
@@ -160,11 +213,21 @@ exports.create_node = async function create_node() {
         );
         if (!cid) return;
         console.log("CID:", cid);
-        console.log("Sending Record:", RECORDS.get(cid).username)
-        pipe(
-            [JSON.stringify(RECORDS.get(cid))],
-            stream
-        );
+        if (!RECORDS.has(cid)) {
+            console.log("CID not found!");
+            pipe(
+                ["ERR_NOT_FOUND"],
+                stream
+            );
+        } else {
+            console.log("Sending Record:", RECORDS.get(cid).username)
+            pipe(
+                [JSON.stringify(RECORDS.get(cid))],
+                stream
+            );
+        }
+
+
     });
 
     await node.start();
@@ -186,17 +249,20 @@ exports.create_node = async function create_node() {
     const advertiseAddrs = node.multiaddrs;
     console.log('advertise:', advertiseAddrs);
 
-
-    // announce this node is providing its own record
-    const cid = await username_cid(node.application.username);
-
-    RECORDS.set(cid.toString(), node.application);
-
-    await node.contentRouting.provide(cid)
-        .catch(reason => console.warn("Proving own:", reason.message, reason.code));
-    console.log("Node is proving:", cid.toString());
-
     return node;
+}
+
+exports.get_providers = async function(node, username) {
+    let cid = await username_cid(username);
+
+    let providers;
+    try {
+        providers = await all(node.contentRouting.findProviders(cid, {timeout: 5000}));
+    } catch (_) {
+        providers = [];
+    }
+
+    return providers.map(v => v.id.toB58String());
 }
 
 const username_cid = async function (username) {
@@ -269,9 +335,12 @@ exports.get_discovered = async function (node) {
 }
 
 exports.get_username = async function (node, idStr) {
-    // needs try/catch
-    let peerId = PeerId.createFromB58String(idStr);
-    return await _get_username(peerId);
+    try {
+        let peerId = PeerId.createFromB58String(idStr);
+        return await _get_username(peerId);
+    } catch (e) {
+        return {message: "ERR_PEERID"};
+    }
 }
 
 exports.put_record = async function (node, record) {
@@ -289,14 +358,6 @@ exports.put_record = async function (node, record) {
                 reject(reason);
             });
     });
-
-    /*
-        return await node.contentRouting.put(
-            new TextEncoder().encode(node.application.username),
-            new TextEncoder().encode(JSON.stringify(record))
-        );
-
-     */
 }
 
 exports.get_or_create_record = async function (node) {
@@ -389,6 +450,10 @@ exports.subscribe = async function (node, peerId, username) {
 
                     // update their subscribers list and send them to the topic
                     record = JSON.parse(allItems[0]);
+                    if (record === "ERR_NOT_FOUND") {
+                        return;
+                    }
+
                     if (!collect(record.subscribers).contains(node.application.username)) {
                         record.subscribers.push(node.application.username);
                         record.updated = Date.now();
@@ -396,10 +461,11 @@ exports.subscribe = async function (node, peerId, username) {
                         await node.pubsub.publish(username,
                             new TextEncoder().encode(JSON.stringify(record)));
                         console.log("[PUBSUB] Sent an update for:", username);
-
-                        await node.contentRouting.provide(cid);
-                        console.log("> Providing for:", username);
                     }
+
+                    await node.contentRouting.provide(cid);
+                    RECORDS.set(cid.toString(), record);
+                    console.log("> Providing for:", username);
                     done = true;
                 }
             );

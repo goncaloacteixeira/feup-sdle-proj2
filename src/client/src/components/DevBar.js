@@ -3,7 +3,7 @@ import {Alert, Grid, Button} from "@mui/material";
 import DevModal from "./DevModal";
 import axios from "axios";
 
-export default function DevBar( {data} ) {
+export default function DevBar({data}) {
     // method to export a record to a downloadable JSON file
     const exportRecord = () => {
         axios.get('/exports/record')
@@ -18,7 +18,7 @@ export default function DevBar( {data} ) {
     }
 
     return (
-        <div id="devBar">
+        <div className="DevBar">
             <Alert severity="success">
                 Node Started! Current PeerId: { data.peerId }
                 <Grid container>

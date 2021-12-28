@@ -88,21 +88,7 @@ router.get('/record', (req, res) => {
     }
 
     res.send({message: node.application});
-})
-
-/**
- * GET Method to retrieve a user's public record
- */
-router.get('/records/:username', (req, res) => {
-    if (!node) {
-        return res.status(400).send({
-            message: "Node not Started!"
-        });
-    }
-
-    p2p.get_record(node, req.params.username)
-        .then((message) => res.send({message: message}))
-})
+});
 
 /**
  * POST Method to Subscribe a user

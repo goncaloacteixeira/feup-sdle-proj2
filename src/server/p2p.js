@@ -226,8 +226,6 @@ exports.create_node = async function create_node() {
                 stream
             );
         }
-
-
     });
 
     await node.start();
@@ -358,26 +356,6 @@ exports.put_record = async function (node, record) {
                 reject(reason);
             });
     });
-}
-
-exports.get_or_create_record = async function (node) {
-    return await node.contentRouting.get(new TextEncoder().encode(node.application.username));
-}
-
-exports.get_record = async function (node, username) {
-    return new Promise(resolve => {
-        node.contentRouting.get(new TextEncoder().encode(username))
-            .then(
-                message => {
-                    // Get the record and add the new post
-                    let msgStr = new TextDecoder().decode(message.val);
-                    let record = JSON.parse(msgStr);
-
-                    resolve(record);
-                },
-                reason => resolve(reason.code)
-            );
-    })
 }
 
 exports.get_peer_id_by_username = async function (node, username) {

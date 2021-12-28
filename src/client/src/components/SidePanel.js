@@ -6,45 +6,35 @@ export default function SidePanel(props) {
     //This will change after firebase and we can obtain all users, for now not showing current user or bootstraps
     const removeBootstrapNodes = () => {
         let users = [];
-        props.info.discovered.map((value) => {
+        props.info.discovered.forEach(value => {
             if(value.username !== 'bootstrap node' && value.username !== props.info.data.username) {
                 users.push(value);
             }
-        })
+        });
         return users;
     }
 
-    let positions = [];
-    let state = new Array(removeBootstrapNodes().length).fill(false);
-    const givePositions = () => {
-        removeBootstrapNodes().map((sponsor, index) => {
-        props.info.data.subscribed.map((s) => {
-            if(sponsor.username === s) {
-            positions.push(index);
-            }
-        })
-        })
-    }
-    givePositions();
-
     const makeState = () => {
-        state.map((s, index) => {
-        positions.map((pos) => {
-            if(pos === index) {
-            state[index] = true
+        let state = new Array(removeBootstrapNodes().length).fill(false);
+        removeBootstrapNodes().map((node, index) => {
+        props.info.data.subscribed.map((n) => {
+            if(node.username === n) {
+                state[index] = true;
             }
         })
         })
+
+        return state;
     }
-    makeState();
-    const [checkedState, setCheckedState] = React.useState(state);
+
+    const [checkedState, setCheckedState] = React.useState(makeState());
 
     const handleClick = (e, position) => {
         e.preventDefault();
         const updatedCheckedState = checkedState.map((item, index) =>
             index === position ? !item : item);
 
-        if(!isSubscribed(e.target.id)) {
+        if(!checkedState[position]) {
             axios.post('/p2p/subscribe', {username: e.target.id})
             .then((res) => {
                 console.log(res);
@@ -65,53 +55,40 @@ export default function SidePanel(props) {
         
     }
 
-    const isSubscribed = (username) => {
-        let flag = false;
-        props.info.data.subscribed.map((sub) => {
-            if(sub === username) {
-                flag = true;
-            }
-        })
-
-        return flag;
-    }
-
     return (
         <Grid container>
-            <Grid item xs={12}>
-                <h2>Users</h2>
-                <List dense sx={{
-                    width: '100%',
-                    maxWidth: 360,
-                    bgcolor: 'background.paper',
-                    position: 'relative',
-                    overflow: 'auto',
-                    maxHeight: 400,
-                    '& ul': { padding: 0 },
-                }}>
-                    {removeBootstrapNodes().map((value, index) => {
-                        const labelId = `checkbox-list-secondary-label-${value.username}`;
-                        return (
-                            <ListItem
-                                key={value.username}
-                                secondaryAction={
-                                    <Button variant={ checkedState[index] ? 'outlined' : 'contained' } onClick={(e) => handleClick(e, index)} size="small" id={value.username}>{ checkedState[index] ? 'Following' : 'Follow' }</Button>
-                                }
-                                disablePadding
-                            >
-                                <ListItemButton>
-                                <ListItemAvatar>
-                                    <Avatar>H</Avatar>
-                                </ListItemAvatar>
-                                <ListItemText id={labelId}>
-                                    <Link href="#" color="inherit" underline="hover">{value.username}</Link>
-                                </ListItemText>
-                                </ListItemButton>
-                            </ListItem>
-                        );
-                    })}
-                </List>
-            </Grid>
+            <h2>Users</h2>
+            <List dense sx={{
+                width: '100%',
+                maxWidth: 360,
+                bgcolor: 'background.paper',
+                position: 'relative',
+                overflow: 'auto',
+                maxHeight: 400,
+                '& ul': { padding: 0 },
+            }}>
+                {removeBootstrapNodes().map((value, index) => {
+                    const labelId = `checkbox-list-secondary-label-${value.username}`;
+                    return (
+                        <ListItem
+                            key={value.username}
+                            secondaryAction={
+                                <Button variant={ checkedState[index] ? 'outlined' : 'contained' } onClick={(e) => handleClick(e, index)} size="small" id={value.username}>{ checkedState[index] ? 'Following' : 'Follow' }</Button>
+                            }
+                            disablePadding
+                        >
+                            <ListItemButton>
+                            <ListItemAvatar>
+                                <Avatar>H</Avatar>
+                            </ListItemAvatar>
+                            <ListItemText id={labelId}>
+                                <Link href="#" color="inherit" underline="hover">{value.username}</Link>
+                            </ListItemText>
+                            </ListItemButton>
+                        </ListItem>
+                    );
+                })}
+            </List>
         </Grid>
     );
 

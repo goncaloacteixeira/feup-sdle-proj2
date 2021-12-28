@@ -330,23 +330,6 @@ exports.get_peer_id_by_username = async function (node, username) {
         default:
             return 'ERR_NOT_FOUND';
     }
-
-
-    return new Promise(resolve => {
-        node.contentRouting.get(new TextEncoder().encode(username))
-            .then(
-                result => {
-                    let msgStr = new TextDecoder().decode(result.val);
-                    let record = JSON.parse(msgStr);
-
-                    resolve(record.peerId);
-                },
-                reason => {
-                    console.log("> SUB", username, "FAILED")
-                    resolve(reason.code)
-                }
-            );
-    });
 }
 
 exports.subscribe = async function (node, peerId, username) {
@@ -386,7 +369,15 @@ exports.subscribe = async function (node, peerId, username) {
         let record = null;
         let i = 0;
         while (!done && i < providers.length) {
-            const {stream} = await node.dialProtocol(providers[i++].id, ['/record/1.0.0']);
+            let dial = null;
+
+            try {
+                dial = await node.dialProtocol(providers[i++].id, ['/record/1.0.0']);
+            } catch (e) {
+                continue;
+            }
+
+            const {stream} = dial;
             await pipe([cid.toString()], stream);
             await pipe(
                 stream,
@@ -409,35 +400,82 @@ exports.subscribe = async function (node, peerId, username) {
                         await node.contentRouting.provide(cid);
                         console.log("> Providing for:", username);
                     }
-
                     done = true;
                 }
             );
         }
-
         return resolve(record);
     });
 }
 
 exports.unsubscribe = async function (node, peerId, username) {
-    return new Promise(resolve => {
-        node.dialProtocol(peerId, ['/unsubscribe/1.0.0'])
-            .then(
-                async ({stream}) => {
-                    await pipe([node.application.username], stream);
-                    // idempotent operation
-                    node.application.subscribed = node.application.subscribed.filter(function (value) {
-                        return value !== username;
-                    });
-                    await exports.put_record(node, node.application);
+    return new Promise(async (resolve) => {
+       if (!collect(node.application.subscribed).contains(username)) {
+           return resolve("ERR_NOT_SUBSCRIBED");
+       }
 
-                    // start reading posts from external user
-                    await node.pubsub.unsubscribe(username);
-                    console.log("Unregistered to Topic:", username);
-                    resolve("OK");
-                },
-                _ => resolve("ERR")
+        node.application.subscribed = node.application.subscribed.filter(function (value) {
+            return value !== username;
+        });
+        await exports.put_record(node, node.application);
+        // signal we are not subscribing user anymore
+        // somebody should have the user's record by CID, if not there's nothing we can do.
+        const cid = await username_cid(username);
+        let providers = await all(node.contentRouting.findProviders(cid, {timeout: 5000}))
+            .catch(_ => {
+                console.log("Could not find providers for:", username);
+                providers = [];
+            })
+
+        if (providers.length === 0) {
+            return resolve('ERR_NOT_FOUND');
+        }
+
+        console.log("Found", providers.length, "providers for", username);
+
+        let done = false;
+        let record = null;
+        let i = 0;
+        while (!done && i < providers.length) {
+            let dial = null;
+
+            try {
+                dial = await node.dialProtocol(providers[i++].id, ['/record/1.0.0']);
+            } catch (e) {
+                continue;
+            }
+
+            const {stream} = dial;
+
+            await pipe([cid.toString()], stream);
+            await pipe(
+                stream,
+                async function (source) {
+                    const allItems = [];
+                    for await (const item of source) {
+                        allItems.push(item.toString());
+                    }
+
+                    // update their subscribers list and send them to the topic
+                    record = JSON.parse(allItems[0]);
+                    if (collect(record.subscribers).contains(node.application.username)) {
+                        record.subscribers = record.subscribers.filter(function (value) {
+                            return value !== username;
+                        });
+                        record.updated = Date.now();
+
+                        await node.pubsub.publish(username,
+                            new TextEncoder().encode(JSON.stringify(record)));
+                        console.log("[PUBSUB] Sent an update for:", username);
+                    }
+                    done = true;
+                }
             );
+        }
+
+        await node.pubsub.unsubscribe(username);
+        console.log("[PUBSUB] Unsubscribed", username);
+        return resolve("OK");
     });
 }
 

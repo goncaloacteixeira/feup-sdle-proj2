@@ -19,9 +19,21 @@ export default function ProfilePage() {
     const [record, setRecord] = React.useState(null);
 
     React.useEffect(() => {
-        fetch("/p2p/records/" + username)
+        fetch("/p2p/profiles/" + username)
             .then((res) => res.json())
-            .then((res) => setRecord(res.message));
+            .then((res) => {
+                if (res.message === "ERR_NOT_SUBSCRIBED") {
+                    // lida com isto bidon
+                    setRecord({
+                        username: username,
+                        subscribers: [],
+                        subscribed: [],
+                        posts: [],
+                    });
+                } else {
+                    setRecord(res.message);
+                }
+            });
     }, []);
 
     let followersList;

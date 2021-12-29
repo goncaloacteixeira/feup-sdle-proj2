@@ -235,7 +235,21 @@ router.get('/providers/:username', async (req, res) => {
     }
 
     res.send({message: await p2p.get_providers(node, req.params.username)});
+});
+
+router.get('/profiles/:username', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    // check if we got the record on the map
+    const record = await p2p.get_record_if_subscribed(node, req.params.username);
+
+    res.send({message: record});
 })
+
 
 
 function get_node() {

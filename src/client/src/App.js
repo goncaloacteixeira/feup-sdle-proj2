@@ -9,20 +9,18 @@ import {auth} from './fire.js';
 import WelcomePage from "./pages/WelcomePage";
 
 function App() {
-    const [isLoggedIn, setIsLoggedIn] = React.useState(null);
+    const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
-    const activate = () => {
-        auth.onAuthStateChanged((user) => {
-            return user ? setIsLoggedIn(true) : setIsLoggedIn(false);
-        });
-    }
+    auth.onAuthStateChanged((user) => {
+        return user ? setIsLoggedIn(true) : setIsLoggedIn(false);
+    });
 
     return (
         <div className="App">
             {!isLoggedIn ?
                 <Router>
                     <Routes>
-                        <Route path="/" element={<WelcomePage activation={activate}/>}/>
+                        <Route path="/" element={<WelcomePage/>}/>
                     </Routes>
                 </Router>
                 :

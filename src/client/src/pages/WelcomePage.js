@@ -9,10 +9,6 @@ export default function WelcomePage(props) {
     const [email, setEmail] = React.useState(null);
     const [password, setPassword] = React.useState(null);
 
-    auth.onAuthStateChanged((user) => {
-        return user ? props.activation() : null;
-    });
-
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(`submitted email: 
@@ -36,9 +32,7 @@ export default function WelcomePage(props) {
                         id: data.id,
                         pubKey: data.pubKey,
                     }).then((res) => {
-                        if (res.data === "OK" || res.data === "ERR_ALREADY_STARTED") {
-                            props.activation();
-                        }
+                        console.log(res.data);
                     });
 
                 } else {

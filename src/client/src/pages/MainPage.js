@@ -15,11 +15,17 @@ export default function MainPage() {
     React.useEffect(() => {
         const startTime = new Date().getTime();
         const interval = setInterval(function () {
-            if (new Date().getTime() - startTime > 60000 || info) {
+            axios.get('/p2p/info').then(res => {
+                if (res.status !== 400) {
+                    setInfo(res.data);
+                    console.log("Got Info");
+                    clearInterval(interval);
+                }
+            });
+            if (new Date().getTime() - startTime > 60000) {
+                console.log("Hang Up getting info");
                 clearInterval(interval);
-                return;
             }
-            axios.get('/p2p/info').then(res => setInfo(res.data));
         }, 2000);
     }, []);
 

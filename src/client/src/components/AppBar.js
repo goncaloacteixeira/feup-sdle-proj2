@@ -6,10 +6,14 @@ import Typography from '@mui/material/Typography';
 import {Button} from "@mui/material";
 
 import {auth} from '../fire';
+import axios from "axios";
 
 export default function CustomAppBar() {
     const handleLogout = () => {
-        auth.signOut();
+        axios.post('/p2p/logout')
+            .then(async (res) => {
+                await auth.signOut();
+            })
     }
 
     return (

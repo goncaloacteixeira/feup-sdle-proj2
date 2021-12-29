@@ -9,13 +9,35 @@ let node = null;
  * When node is started it should update the username variable
  * then it should start a PUT operation for its record on the network
  * @param username username linked to the user
+ * @param peerIdJson
  * @returns {Promise<unknown>}
  */
-async function create(username) {
-    node = await p2p.create_node();
-    node.application.username = username;
+async function create(username, peerIdJson) {
+    node = await p2p.create_node(username, peerIdJson);
     return node;
 }
+
+router.post('/start', async (req, res) => {
+    if (node) {
+        return res.status(400).send({
+            message: "ERR_ALREADY_STARTED"
+        });
+    }
+
+    const username = req.body.username;
+    const peerIdJSON = {
+        id: req.body.id,
+        pubKey: req.body.pubKey,
+        privKey: req.body.privKey
+    };
+
+    console.log(peerIdJSON);
+
+    await create(username, peerIdJSON);
+
+    console.log("Node Started");
+    res.send("OK");
+})
 
 /**
  * GET information for node
@@ -249,8 +271,6 @@ router.get('/profiles/:username', async (req, res) => {
 
     res.send({message: record});
 })
-
-
 
 function get_node() {
     return node;

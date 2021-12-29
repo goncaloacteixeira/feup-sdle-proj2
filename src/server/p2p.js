@@ -21,8 +21,8 @@ const BOOTSTRAP_IDS = [
 
 const RECORDS = new Map();
 
-exports.create_node = async function create_node() {
-    const peerId = await PeerId.createFromJSON(require(process.env.PEERID));
+exports.create_node = async function create_node(username, peerIdJSON) {
+    const peerId = await PeerId.createFromJSON(peerIdJSON);
 
     const node = await Libp2p.create({
         peerId,
@@ -57,7 +57,7 @@ exports.create_node = async function create_node() {
         posts: [],
         subscribed: [],
         subscribers: [],
-        username: process.env.USERNAME,
+        username: username,
         peerId: node.peerId.toB58String(),
         updated: 0,
     };

@@ -12,9 +12,6 @@ var testRouter = require('./routes/test');
 var [p2pRouter, create] = require('./routes/p2p');
 var exportsRouter = require('./routes/exports');
 
-const {firebase, firebaseAuth} = require('./firebase');
-
-
 var app = express();
 
 // view engine setup
@@ -49,8 +46,5 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-create(process.env.USERNAME || 'unknown')
-    .then(node => console.log("Node Created!", node.peerId.toB58String()));
 
 module.exports = app;

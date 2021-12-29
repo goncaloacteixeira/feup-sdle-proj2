@@ -1,9 +1,9 @@
 // Import the functions you need from the SDKs you need
 const { initializeApp } = require("firebase/app");
 const { getAnalytics } = require("firebase/analytics");
-const { getAuth } = require ("firebase/auth");
+const { getAuth, createUserWithEmailAndPassword } = require ("firebase/auth");
 const { getFirestore } =  require("firebase/firestore");
-const { collection, query, where, getDocs } = require("firebase/firestore");
+const { collection, query, where, getDocs, setDoc, doc} = require("firebase/firestore");
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -38,6 +38,30 @@ const get_user_id_by_username = async (username) => {
     return querySnapshot.docs[0].data();
 }
 
+const signup_create_peer_id = async (email, password, username, peerIdJSON) => {
+    const auth = getAuth();
+    return new Promise(resolve => {
+        createUserWithEmailAndPassword(auth, email, password)
+            .then(async (userCredential) => {
+                // Signed in
+                const user = userCredential.user;
+                // Add a new document in collection "cities"
+                await setDoc(doc(db, "users", user.uid), {
+                    id: peerIdJSON.id,
+                    pubKey: peerIdJSON.pubKey,
+                    privKey: peerIdJSON.privKey,
+                    username: username
+                });
+                return resolve("OK");
+            })
+            .catch((error) => {
+                console.log(error.code);
+                return resolve(error.code)
+            });
+    })
 
-module.exports = { auth, db, get_user_id_by_username };
+}
+
+
+module.exports = { auth, db, get_user_id_by_username, signup_create_peer_id };
 

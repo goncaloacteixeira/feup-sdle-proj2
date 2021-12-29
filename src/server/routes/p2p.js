@@ -2,6 +2,7 @@ const p2p = require('../p2p');
 const express = require("express");
 const PeerId = require("peer-id");
 const router = express.Router();
+const {signup_create_peer_id} = require('../fire');
 
 let node = null;
 
@@ -38,6 +39,18 @@ router.post('/start', async (req, res) => {
     console.log("Node Started");
     res.send("OK");
 })
+
+router.post('/signup', async (req, res) => {
+    console.log("New Signup Request:", req.body);
+    const peerId = await PeerId.create({keyType: 'RSA', bits: 1024});
+
+    const peerIdJson = peerId.toJSON();
+
+    const result = await signup_create_peer_id(req.body.email, req.body.password, req.body.username, peerIdJson);
+
+    res.send({message: result});
+})
+
 
 /**
  * GET information for node

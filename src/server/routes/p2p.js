@@ -14,7 +14,8 @@ let node = null;
  * @returns {Promise<unknown>}
  */
 async function create(username, peerIdJson) {
-    node = await p2p.create_node(username, peerIdJson);
+    if (node == null)
+        node = await p2p.create_node(username, peerIdJson);
     return node;
 }
 

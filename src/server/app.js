@@ -47,4 +47,10 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+if (process.env.MODE === "DETACHED") {
+  create(process.env.USERNAME, require(process.env.PEERID))
+      .then(_ => console.log("Node Started"));
+}
+
+
 module.exports = app;

@@ -294,6 +294,12 @@ async function _get_username(node, peerId) {
     });
 }
 
+exports.stop_node = async function (node) {
+    await node.stop();
+    console.log("Node Stopped!");
+    return "OK";
+}
+
 exports.get_discovered = async function (node) {
     const discovered = [];
 

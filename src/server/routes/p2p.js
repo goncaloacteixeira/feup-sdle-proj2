@@ -52,6 +52,18 @@ router.post('/signup', async (req, res) => {
     res.send({message: result});
 })
 
+router.post('/logout', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    await p2p.stop_node(node);
+    node = null;
+    res.send("OK");
+})
+
 
 /**
  * GET information for node

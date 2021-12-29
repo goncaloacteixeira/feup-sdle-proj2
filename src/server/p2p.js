@@ -7,14 +7,14 @@ const Bootstrap = require('libp2p-bootstrap');
 const DHT = require('libp2p-kad-dht');
 const pipe = require('it-pipe')
 const PeerId = require("peer-id");
-const {put_record} = require("./p2p");
 const collect = require('collect.js');
-const {application} = require("express");
 const {CID} = require('multiformats/cid');
 const json = require('multiformats/codecs/json');
 const {sha256} = require('multiformats/hashes/sha2');
 const all = require("it-all");
 const delay = require("delay");
+
+const {get_user_id_by_username} = require('./fire');
 
 const BOOTSTRAP_IDS = [
     'Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
@@ -23,8 +23,8 @@ const BOOTSTRAP_IDS = [
 
 const RECORDS = new Map();
 
-exports.create_node = async function create_node() {
-    const peerId = await PeerId.createFromJSON(require(process.env.PEERID));
+exports.create_node = async function create_node(username, peerIdJSON) {
+    const peerId = await PeerId.createFromJSON(peerIdJSON);
 
     const node = await Libp2p.create({
         peerId,
@@ -59,7 +59,7 @@ exports.create_node = async function create_node() {
         posts: [],
         subscribed: [],
         subscribers: [],
-        username: process.env.USERNAME,
+        username: username,
         peerId: node.peerId.toB58String(),
         updated: 0,
     };
@@ -123,6 +123,10 @@ exports.create_node = async function create_node() {
                         const allItems = [];
                         for await (const item of source) {
                             allItems.push(item.toString());
+                        }
+
+                        if (allItems[0] === "ERR_NOT_FOUND") {
+                            return;
                         }
 
                         record = JSON.parse(allItems[0]);
@@ -250,7 +254,7 @@ exports.create_node = async function create_node() {
     return node;
 }
 
-exports.get_providers = async function(node, username) {
+exports.get_providers = async function (node, username) {
     let cid = await username_cid(username);
 
     let providers;
@@ -312,8 +316,6 @@ exports.get_discovered = async function (node) {
         let peerId = PeerId.createFromB58String(discoveredElement.id);
         let {message, code} = await _get_username(node, peerId);
 
-        console.log({peerId: discoveredElement.id, message: message, code: code});
-
         switch (code) {
             case 'ERR_DIALED_SELF':
                 discoveredElement.username = node.application.username;
@@ -359,16 +361,11 @@ exports.put_record = async function (node, record) {
 }
 
 exports.get_peer_id_by_username = async function (node, username) {
-    // this should be a connection to the database it will be hardcoded for now
-
-    switch (username) {
-        case 'skdgt':
-            return 'QmcKqmDw4NbiXLw6hEpNGjqyTsMgJLQ3MPvxZm5qmcyAGS';
-        case 'test1':
-            return 'Qmb4ok97PbUpQVQjv3wThBpYUKHD1KQDhVphajWKDYmf41';
-        default:
-            return 'ERR_NOT_FOUND';
+    const user = await get_user_id_by_username(username);
+    if (user === null) {
+        return "ERR_NOT_FOUND";
     }
+    return user.id;
 }
 
 exports.subscribe = async function (node, peerId, username) {
@@ -454,9 +451,9 @@ exports.subscribe = async function (node, peerId, username) {
 
 exports.unsubscribe = async function (node, peerId, username) {
     return new Promise(async (resolve) => {
-       if (!collect(node.application.subscribed).contains(username)) {
-           return resolve("ERR_NOT_SUBSCRIBED");
-       }
+        if (!collect(node.application.subscribed).contains(username)) {
+            return resolve("ERR_NOT_SUBSCRIBED");
+        }
 
         node.application.subscribed = node.application.subscribed.filter(function (value) {
             return value !== username;
@@ -540,4 +537,19 @@ exports.echo = async function (node, peerId) {
                 )
             }, _ => resolve(false));
     })
+}
+
+exports.get_record_if_subscribed = async function (node, username) {
+    // check if its self
+    if (username === node.application.username) {
+        return node.application;
+    }
+
+    const cid = await username_cid(username);
+    if (RECORDS.has(cid.toString()) && collect(node.application.subscribed).contains(username)) {
+        return RECORDS.get(cid.toString());
+    }
+
+    // otherwise we can't get anything
+    return "ERR_NOT_SUBSCRIBED";
 }

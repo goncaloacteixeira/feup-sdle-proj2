@@ -2,6 +2,7 @@ const p2p = require('../p2p');
 const express = require("express");
 const PeerId = require("peer-id");
 const router = express.Router();
+const {signup_create_peer_id} = require('../fire');
 
 let node = null;
 
@@ -9,13 +10,47 @@ let node = null;
  * When node is started it should update the username variable
  * then it should start a PUT operation for its record on the network
  * @param username username linked to the user
+ * @param peerIdJson
  * @returns {Promise<unknown>}
  */
-async function create(username) {
-    node = await p2p.create_node();
-    node.application.username = username;
+async function create(username, peerIdJson) {
+    node = await p2p.create_node(username, peerIdJson);
     return node;
 }
+
+router.post('/start', async (req, res) => {
+    if (node) {
+        return res.status(400).send({
+            message: "ERR_ALREADY_STARTED"
+        });
+    }
+
+    const username = req.body.username;
+    const peerIdJSON = {
+        id: req.body.id,
+        pubKey: req.body.pubKey,
+        privKey: req.body.privKey
+    };
+
+    console.log(peerIdJSON);
+
+    await create(username, peerIdJSON);
+
+    console.log("Node Started");
+    res.send("OK");
+})
+
+router.post('/signup', async (req, res) => {
+    console.log("New Signup Request:", req.body);
+    const peerId = await PeerId.create({keyType: 'RSA', bits: 1024});
+
+    const peerIdJson = peerId.toJSON();
+
+    const result = await signup_create_peer_id(req.body.email, req.body.password, req.body.username, peerIdJson);
+
+    res.send({message: result});
+})
+
 
 /**
  * GET information for node
@@ -235,8 +270,20 @@ router.get('/providers/:username', async (req, res) => {
     }
 
     res.send({message: await p2p.get_providers(node, req.params.username)});
-})
+});
 
+router.get('/profiles/:username', async (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    // check if we got the record on the map
+    const record = await p2p.get_record_if_subscribed(node, req.params.username);
+
+    res.send({message: record});
+})
 
 function get_node() {
     return node;

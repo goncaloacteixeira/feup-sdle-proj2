@@ -14,6 +14,8 @@ const {sha256} = require('multiformats/hashes/sha2');
 const all = require("it-all");
 const delay = require("delay");
 
+const {get_user_id_by_username} = require('./fire');
+
 const BOOTSTRAP_IDS = [
     'Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
     'QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs',
@@ -121,6 +123,10 @@ exports.create_node = async function create_node(username, peerIdJSON) {
                         const allItems = [];
                         for await (const item of source) {
                             allItems.push(item.toString());
+                        }
+
+                        if (allItems[0] === "ERR_NOT_FOUND") {
+                            return;
                         }
 
                         record = JSON.parse(allItems[0]);
@@ -355,16 +361,11 @@ exports.put_record = async function (node, record) {
 }
 
 exports.get_peer_id_by_username = async function (node, username) {
-    // this should be a connection to the database it will be hardcoded for now
-
-    switch (username) {
-        case 'skdgt':
-            return 'QmcKqmDw4NbiXLw6hEpNGjqyTsMgJLQ3MPvxZm5qmcyAGS';
-        case 'test1':
-            return 'Qmb4ok97PbUpQVQjv3wThBpYUKHD1KQDhVphajWKDYmf41';
-        default:
-            return 'ERR_NOT_FOUND';
+    const user = await get_user_id_by_username(username);
+    if (user === null) {
+        return "ERR_NOT_FOUND";
     }
+    return user.id;
 }
 
 exports.subscribe = async function (node, peerId, username) {

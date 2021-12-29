@@ -21,7 +21,7 @@ const BOOTSTRAP_IDS = [
     'QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs',
 ]
 
-const RECORDS = new Map();
+let RECORDS = new Map();
 
 exports.create_node = async function create_node(username, peerIdJSON) {
     const peerId = await PeerId.createFromJSON(peerIdJSON);
@@ -296,6 +296,7 @@ async function _get_username(node, peerId) {
 
 exports.stop_node = async function (node) {
     await node.stop();
+    RECORDS = new Map();
     console.log("Node Stopped!");
     return "OK";
 }

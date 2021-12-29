@@ -79,7 +79,7 @@ router.get('/info', async (req, res) => {
     const discovered = await p2p.get_discovered(node);
 
     res.send({discovered: discovered, data: node.application});
-})
+});
 
 /**
  * GET username from peerId
@@ -93,7 +93,7 @@ router.get('/username/:peerid', (req, res) => {
 
     p2p.get_username(node, req.params.peerid)
         .then((data) => res.send(data));
-})
+});
 
 
 /**

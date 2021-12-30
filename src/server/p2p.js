@@ -13,12 +13,14 @@ const json = require('multiformats/codecs/json');
 const {sha256} = require('multiformats/hashes/sha2');
 const all = require("it-all");
 const delay = require("delay");
+const Ping = require('libp2p/src/ping');
 
 const {get_user_id_by_username} = require('./fire');
 
 const BOOTSTRAP_IDS = [
     'Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
     'QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs',
+    'Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq'
 ]
 
 let RECORDS = new Map();
@@ -37,13 +39,25 @@ exports.create_node = async function create_node(username, peerIdJSON) {
             peerDiscovery: [Bootstrap], // we can add other mechanisms such as bootstrap
             pubsub: Gossipsub,
             dht: DHT,
-        }, config: {
+        },
+        dialer: {
+            dialTimeout: 1000,
+            maxDialsPerPeer: 4,
+        },
+        connectionManager: {
+            pollInterval: 1000,
+        },
+        metrics: {
+            enabled: true
+        },
+        config: {
             peerDiscovery: {
                 autoDial: true,
                 [Bootstrap.tag]: {
                     list: [
-                        '/ip4/127.0.0.1/tcp/8998/p2p/Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
-                        '/ip4/127.0.0.1/tcp/8999/p2p/QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs'
+                        '/ip4/148.63.193.194/tcp/8997/p2p/Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
+                        '/ip4/148.63.193.194/tcp/8998/p2p/QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs',
+                        '/ip4/148.63.193.194/tcp/8999/p2p/Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq'
                     ],
                     interval: 1000,
                     enabled: true,
@@ -251,6 +265,8 @@ exports.create_node = async function create_node(username, peerIdJSON) {
     const advertiseAddrs = node.multiaddrs;
     console.log('advertise:', advertiseAddrs);
 
+    Ping.mount(node);
+
     return node;
 }
 
@@ -276,8 +292,35 @@ const username_cid = async function (username) {
     return CID.create(1, json.code, hash)
 }
 
-async function _get_username(node, peerId) {
+function ping(node, peerId, timeout) {
     return new Promise(resolve => {
+        Ping(node, peerId).then(latency => resolve(latency), err => resolve(err.code));
+        setTimeout(() => resolve(null), timeout);
+    });
+}
+
+async function check_alive(node, peerId, timeout) {
+    const result = await ping(node, peerId, timeout);
+    if (result == null) {
+        return {status: -1, message: 'ERR_NOT_REACHABLE'};
+    }
+    if (!isFinite(result)) {
+        return {status: -2, message: result};
+    }
+    return {status: 0, message: result};
+}
+
+async function _get_username(node, peerId) {
+    return new Promise(async resolve => {
+        // Check if the node is reachable (fml)
+        const ping = await check_alive(node, peerId, 3000);
+        if (ping.status === -1) {
+            return resolve({message: "unreachable node", code: 'ERR_NOT_FOUND'});
+        }
+        if (ping.status === -2) {
+            return resolve({message: "unreachable node", code: ping.message});
+        }
+
         node.dialProtocol(peerId, ['/username'])
             .then(async ({stream}) => {
                 await pipe(
@@ -414,6 +457,11 @@ exports.subscribe = async function (node, peerId, username) {
         while (!done && i < providers.length) {
             let dial = null;
 
+            const ping = await check_alive(node, peerId, 3000);
+            if (ping.status !== 0) {
+                continue;
+            }
+
             try {
                 dial = await node.dialProtocol(providers[i++].id, ['/record/1.0.0']);
             } catch (e) {
@@ -487,6 +535,11 @@ exports.unsubscribe = async function (node, peerId, username) {
         while (!done && i < providers.length) {
             let dial = null;
 
+            const ping = await check_alive(node, peerId, 3000);
+            if (ping.status !== 0) {
+                continue;
+            }
+
             try {
                 dial = await node.dialProtocol(providers[i++].id, ['/record/1.0.0']);
             } catch (e) {
@@ -529,7 +582,13 @@ exports.unsubscribe = async function (node, peerId, username) {
 }
 
 exports.echo = async function (node, peerId) {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
+
+        const ping = await check_alive(node, peerId, 3000);
+        if (ping.status !== 0) {
+            return resolve(false);
+        }
+
         node.dialProtocol(peerId, ['/echo/1.0.0'])
             .then(async ({stream}) => {
                 pipe(

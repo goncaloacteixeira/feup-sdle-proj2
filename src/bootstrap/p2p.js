@@ -18,8 +18,16 @@ const PORT = process.env.PORT || 8998;
  */
 
 
+async function create_peer_id() {
+    const peerId = await PeerId.create({keyType: 'Ed25519', bits: 1024});
+    console.log(peerId.toJSON());
+}
+
+
 async function create_node() {
     const peerId = await PeerId.createFromJSON(KEY_JSON);
+
+    console.log("Read Key:", peerId.toJSON());
 
     const node = await Libp2p.create({
         peerId,
@@ -65,27 +73,7 @@ async function create_node() {
     return node;
 }
 
-
-const get_record = async function (node, username) {
-    return new Promise(resolve => {
-        node.contentRouting.get(new TextEncoder().encode(username))
-            .then(
-                message => {
-                    // Get the record and add the new post
-                    let msgStr = new TextDecoder().decode(message.val);
-                    let record = JSON.parse(msgStr);
-
-                    console.log("Record found for:", username)
-                    resolve({message: record});
-                },
-                reason => {
-                    console.log("Record not found for:", username)
-                    resolve({message: reason.code})
-                }
-            );
-    })
-}
-
+// create_peer_id().then(() => {});
 
 create_node()
-    .then(node => console.log("Bootstrap Node Started!", node.peerId.toB58String()));
+   .then(node => console.log("Bootstrap Node Started!", node.peerId.toB58String()));

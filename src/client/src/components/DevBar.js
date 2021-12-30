@@ -17,6 +17,18 @@ export default function DevBar({data}) {
             });
     }
 
+    const exportFeed = () => {
+        axios.get('/exports/feed')
+            .then((result) => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(result.data, null, 2));
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href",     dataStr     );
+                dlAnchorElem.setAttribute("download", "feed.json");
+                dlAnchorElem.click();
+                dlAnchorElem.remove();
+            });
+    }
+
     return (
         <div className="DevBar">
             <Alert severity="success">
@@ -27,6 +39,9 @@ export default function DevBar({data}) {
                     </Grid>
                     <Grid item>
                         <Button onClick={exportRecord}>Export Record</Button>
+                    </Grid>
+                    <Grid item>
+                        <Button onClick={exportFeed}>Export Feed</Button>
                     </Grid>
                 </Grid>
             </Alert>

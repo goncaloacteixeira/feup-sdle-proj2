@@ -8,6 +8,11 @@ router.get('/record', async (req, res) => {
     res.send(record);
 })
 
+router.get('/feed', (req, res) => {
+    let feed = p2p.get_feed(get_node());
+    res.send(feed);
+})
+
 
 module.exports = router;
 

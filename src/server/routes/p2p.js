@@ -3,6 +3,9 @@ const express = require("express");
 const PeerId = require("peer-id");
 const router = express.Router();
 const {signup_create_peer_id} = require('../fire');
+const json = require('multiformats/codecs/json');
+const {sha256} = require('multiformats/hashes/sha2');
+const {CID} = require('multiformats/cid');
 
 let node = null;
 
@@ -99,7 +102,7 @@ router.get('/username/:peerid', (req, res) => {
 /**
  * POST method to update/create the public record for the user with a new post
  */
-router.post('/posts', (req, res) => {
+router.post('/posts', async (req, res) => {
     if (!node) {
         return res.status(400).send({
             message: "Node not Started!"
@@ -111,10 +114,18 @@ router.post('/posts', (req, res) => {
     }
 
     const post = {
-        data: req.body.post,
+        data: req.body.post.trim(),
         author: node.application.username,
         timestamp: Date.now()
     };
+
+    const bytes = json.encode(post);
+    // Hash Uint8array representation
+    const hash = await sha256.digest(bytes);
+    // Create CID (default base32)
+    const cid = CID.create(1, json.code, hash);
+
+    post.id = cid.toString();
 
     node.application.posts.push(post);
 
@@ -297,6 +308,16 @@ router.get('/profiles/:username', async (req, res) => {
 
     res.send({message: record});
 })
+
+router.get('/feed', (req, res) => {
+    if (!node) {
+        return res.status(400).send({
+            message: "Node not Started!"
+        });
+    }
+
+    res.send({message: p2p.get_feed(node)});
+});
 
 function get_node() {
     return node;

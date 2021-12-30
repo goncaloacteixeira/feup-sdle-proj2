@@ -29,7 +29,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
     const node = await Libp2p.create({
         peerId,
         addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0']
+            listen: ['/ip4/0.0.0.0/tcp/0']
         }, modules: {
             transport: [TCP],
             connEncryption: [NOISE],
@@ -522,6 +522,7 @@ exports.unsubscribe = async function (node, peerId, username) {
         }
 
         await node.pubsub.unsubscribe(username);
+        RECORDS.delete(cid.toString());
         console.log("[PUBSUB] Unsubscribed", username);
         return resolve("OK");
     });
@@ -559,4 +560,14 @@ exports.get_record_if_subscribed = async function (node, username) {
 
     // otherwise we can't get anything
     return "ERR_NOT_SUBSCRIBED";
+}
+
+exports.get_feed = function (node) {
+    let posts = [];
+
+    RECORDS.forEach((value) => {
+        posts.push(...value.posts);
+    })
+
+    return posts.sort((a, b) => b.timestamp - a.timestamp);
 }

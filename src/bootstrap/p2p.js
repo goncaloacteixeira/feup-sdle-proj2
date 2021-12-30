@@ -5,7 +5,6 @@ const {NOISE} = require('libp2p-noise');
 const MPLEX = require('libp2p-mplex');
 const MulticastDNS = require('libp2p-mdns');
 const DHT = require('libp2p-kad-dht');
-const pipe = require('it-pipe');
 
 
 const KEY = process.env.KEY || 'bootstrap1.json';
@@ -16,11 +15,6 @@ const PORT = process.env.PORT || 8998;
  * » BOOTSTRAP NODE «
  *
  * This is still a work in progress!!
- *
- * Bootstrap nodes should keep the records for all users, so that when every user fails there's
- * a safe option to retrieve documents.
- *
- * Bootstrap nodes also have a connection to the database so that the system can use authentication.
  */
 
 
@@ -30,7 +24,7 @@ async function create_node() {
     const node = await Libp2p.create({
         peerId,
         addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/' + PORT]
+            listen: ['/ip4/0.0.0.0/tcp/' + PORT]
         }, modules: {
             transport: [TCP],
             connEncryption: [NOISE],
@@ -57,24 +51,6 @@ async function create_node() {
 
     node.connectionManager.on('peer:connect', async (connection) => {
         console.log('Connected to:', connection.remotePeer.toB58String());
-    })
-
-    node.handle('/record/1.0.0', ({stream}) => {
-        let data = null;
-        pipe(
-            stream,
-            async function (source) {
-                for await (const msg of source) {
-                    console.log("> GET /record for", msg.toString())
-                    data = msg.toString();
-                    pipe(
-                        [JSON.stringify(await get_record(node, data))],
-                        stream
-                    );
-                    return;
-                }
-            }
-        )
     })
 
     await node.start();
@@ -112,4 +88,4 @@ const get_record = async function (node, username) {
 
 
 create_node()
-    .then(node => console.log("Node Started!", node.peerId.toB58String()));
+    .then(node => console.log("Bootstrap Node Started!", node.peerId.toB58String()));

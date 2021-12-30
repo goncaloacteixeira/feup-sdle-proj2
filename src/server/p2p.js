@@ -19,6 +19,7 @@ const {get_user_id_by_username} = require('./fire');
 const BOOTSTRAP_IDS = [
     'Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
     'QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs',
+    'Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq'
 ]
 
 let RECORDS = new Map();
@@ -42,8 +43,9 @@ exports.create_node = async function create_node(username, peerIdJSON) {
                 autoDial: true,
                 [Bootstrap.tag]: {
                     list: [
-                        '/ip4/127.0.0.1/tcp/8998/p2p/Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
-                        '/ip4/127.0.0.1/tcp/8999/p2p/QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs'
+                        '/ip4/127.0.0.1/tcp/8997/p2p/Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
+                        '/ip4/127.0.0.1/tcp/8998/p2p/QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs',
+                        '/ip4/127.0.0.1/tcp/8999/p2p/Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq'
                     ],
                     interval: 1000,
                     enabled: true,

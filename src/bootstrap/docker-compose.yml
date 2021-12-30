@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  bootstrap1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8997
+      - KEY=bootstrap1.json
+    expose:
+      - '8997'
+    ports:
+      - "8997:8997"
+  bootstrap2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8998
+      - KEY=bootstrap2.json
+    ports:
+      - "8998:8998"
+  bootstrap3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8999
+      - KEY=bootstrap3.json
+    ports:
+      - "8999:8999"

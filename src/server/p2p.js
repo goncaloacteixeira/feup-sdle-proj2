@@ -23,7 +23,7 @@ const BOOTSTRAP_IDS = [
     'Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq'
 ]
 
-const BOOTSTRAP_IP = process.env.BOOSTRAP_IP || '127.0.0.1';
+const BOOTSTRAP_IP = process.env.BOOTSTRAP_IP || '127.0.0.1';
 
 let RECORDS = new Map();
 

@@ -12,17 +12,20 @@ Group members:
 ## Instructions
 
 - On `bootstrap/`
-	- run `npm i`
-	- run `KEY=bootstrap1.json node p2p.js`
+	- run `docker-compose up`
 	
 - On `server/`
 	- run `npm i`
-	- run `USERNAME=<username> PORT=<port> npm start`
+	- run `npm start`
+	
+	If you want a new instance for the server in detached mode, add the following environment variables:
+	- MODE=DETACHED
+	- PORT=<port>
+	- USERNAME=<username>
+	These variables can be added on the command or in a .env file
 
 - On `client/`
    	- run `npm i`
    	- run `npm start`
    	
 
-
-You can start multiple servers by changing the USERNAME and PORT environment variables (test purposes)

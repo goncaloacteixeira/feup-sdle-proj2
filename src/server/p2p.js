@@ -23,6 +23,8 @@ const BOOTSTRAP_IDS = [
     'Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq'
 ]
 
+const BOOTSTRAP_IP = process.env.BOOSTRAP_IP || '127.0.0.1';
+
 let RECORDS = new Map();
 
 exports.create_node = async function create_node(username, peerIdJSON) {
@@ -55,9 +57,9 @@ exports.create_node = async function create_node(username, peerIdJSON) {
                 autoDial: true,
                 [Bootstrap.tag]: {
                     list: [
-                        '/ip4/148.63.193.194/tcp/8997/p2p/Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb',
-                        '/ip4/148.63.193.194/tcp/8998/p2p/QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs',
-                        '/ip4/148.63.193.194/tcp/8999/p2p/Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq'
+                        `/ip4/${BOOTSTRAP_IP}/tcp/8997/p2p/${BOOTSTRAP_IDS[0]}`,
+                        `/ip4/${BOOTSTRAP_IP}/tcp/8998/p2p/${BOOTSTRAP_IDS[1]}`,
+                        `/ip4/${BOOTSTRAP_IP}/tcp/8999/p2p/${BOOTSTRAP_IDS[2]}`,
                     ],
                     interval: 1000,
                     enabled: true,

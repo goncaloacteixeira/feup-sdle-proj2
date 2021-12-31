@@ -7,7 +7,7 @@ export default function Post(props) {
     return (
         <Card sx={{ minWidth: 275 }}>
             <CardContent>
-                <Typography>
+                <Typography variant="h6">
                     {props.author}
                 </Typography>
                 <Typography variant="body1">

@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
+require('dotenv').config();
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -46,7 +47,10 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-create(process.env.USERNAME || 'unknown')
-    .then(node => console.log("Node Created!", node.peerId.toB58String()));
+if (process.env.MODE === "DETACHED") {
+  create(process.env.USERNAME, require(process.env.PEERID))
+      .then(_ => console.log("Node Started"));
+}
+
 
 module.exports = app;

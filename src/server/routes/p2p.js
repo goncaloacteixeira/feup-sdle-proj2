@@ -269,23 +269,6 @@ router.get('/subscribed', async (req, res) => {
     res.send({message: data});
 });
 
-
-router.post('/test', async (req, res) => {
-    if (!node) {
-        return res.status(400).send({
-            message: "Node not Started!"
-        });
-    }
-
-    let username = req.body.username;
-    let message = req.body.message;
-
-    await node.pubsub.subscribe(username);
-    await node.pubsub.publish(username, new TextEncoder().encode(message));
-
-    res.send({result: "OK", username: username, message: message});
-})
-
 router.get('/providers/:username', async (req, res) => {
     if (!node) {
         return res.status(400).send({

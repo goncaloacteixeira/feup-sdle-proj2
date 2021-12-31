@@ -22,6 +22,7 @@ Group members:
 	- MODE=DETACHED
 	- PORT=\<port>
 	- USERNAME=\<username>
+	- PEERID=\<key.json>
 	These variables can be added on the command or in a .env file
 
 - On `client/`

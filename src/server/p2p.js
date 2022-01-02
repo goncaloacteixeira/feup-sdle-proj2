@@ -441,11 +441,14 @@ exports.subscribe = async function (node, peerId, username) {
 
         // somebody should have the user's record by CID, if not there's nothing we can do.
         const cid = await username_cid(username);
-        let providers = await all(node.contentRouting.findProviders(cid, {timeout: 5000}))
-            .catch(_ => {
-                console.log("Could not find providers for:", username);
-                providers = [];
-            })
+
+        let providers = [];
+        try {
+            providers = await all(node.contentRouting.findProviders(cid, {timeout: 5000}));
+        } catch (e) {
+            console.log("Could not find providers for:", username);
+            return resolve('ERR_NOT_FOUND');
+        }
 
         if (providers.length === 0) {
             return resolve('ERR_NOT_FOUND');
@@ -519,11 +522,14 @@ exports.unsubscribe = async function (node, peerId, username) {
         // signal we are not subscribing user anymore
         // somebody should have the user's record by CID, if not there's nothing we can do.
         const cid = await username_cid(username);
-        let providers = await all(node.contentRouting.findProviders(cid, {timeout: 5000}))
-            .catch(_ => {
-                console.log("Could not find providers for:", username);
-                providers = [];
-            })
+        
+        let providers = [];
+        try {
+            providers = await all(node.contentRouting.findProviders(cid, {timeout: 5000}));
+        } catch (e) {
+            console.log("Could not find providers for:", username);
+            return resolve('ERR_NOT_FOUND');
+        }
 
         if (providers.length === 0) {
             return resolve('ERR_NOT_FOUND');

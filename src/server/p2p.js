@@ -622,11 +622,11 @@ exports.get_record_if_subscribed = async function (node, username) {
     // check if exists
     const peerId = await get_user_id_by_username(username);
     if (peerId == null) {
-        return "ERR_NOT_FOUND";
+        return {message: "ERR_NOT_FOUND", content: null};
     }
 
     // otherwise not subscribed, can't get information
-    return "ERR_NOT_SUBSCRIBED";
+    return {message: "ERR_NOT_SUBSCRIBED", content:null};
 }
 
 exports.get_feed = function (node) {

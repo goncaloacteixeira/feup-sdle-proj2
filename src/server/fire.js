@@ -39,7 +39,16 @@ const get_user_id_by_username = async (username) => {
 }
 
 const signup_create_peer_id = async (email, password, username, peerIdJSON) => {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("username", "==", username));
+
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.docs.length !== 0) {
+        return "USERNAME_EXISTS";
+    }
+
     const auth = getAuth();
+
     return new Promise(resolve => {
         createUserWithEmailAndPassword(auth, email, password)
             .then(async (userCredential) => {

@@ -611,16 +611,22 @@ exports.echo = async function (node, peerId) {
 exports.get_record_if_subscribed = async function (node, username) {
     // check if its self
     if (username === node.application.username) {
-        return node.application;
+        return {message: "ERR_SELF", content: node.application}
     }
 
     const cid = await username_cid(username);
     if (RECORDS.has(cid.toString()) && collect(node.application.subscribed).contains(username)) {
-        return RECORDS.get(cid.toString());
+        return {message: "OK", content: RECORDS.get(cid.toString())};
     }
 
-    // otherwise we can't get anything
-    return "ERR_NOT_SUBSCRIBED";
+    // check if exists
+    const peerId = await get_user_id_by_username(username);
+    if (peerId == null) {
+        return {message: "ERR_NOT_FOUND", content: null};
+    }
+
+    // otherwise not subscribed, can't get information
+    return {message: "ERR_NOT_SUBSCRIBED", content:null};
 }
 
 exports.get_feed = function (node) {

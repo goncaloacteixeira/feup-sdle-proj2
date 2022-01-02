@@ -71,6 +71,15 @@ const signup_create_peer_id = async (email, password, username, peerIdJSON) => {
 
 }
 
+const get_all_usernames = async () => {
+    let data = [];
+    const querySnapshot = await getDocs(collection(db, "users"));
+    for await(const doc of querySnapshot.docs) {
+        data.push(doc.data().username);
+    }
+    return data;
+}
 
-module.exports = { auth, db, get_user_id_by_username, signup_create_peer_id };
+
+module.exports = { auth, db, get_user_id_by_username, signup_create_peer_id, get_all_usernames };
 

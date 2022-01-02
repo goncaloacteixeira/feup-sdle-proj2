@@ -626,7 +626,7 @@ exports.get_record_if_subscribed = async function (node, username) {
     }
 
     // otherwise not subscribed, can't get information
-    return {message: "ERR_NOT_SUBSCRIBED", content:null};
+    return {message: "ERR_NOT_SUBSCRIBED", content: null};
 }
 
 exports.get_feed = function (node) {

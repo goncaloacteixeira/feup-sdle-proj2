@@ -18,7 +18,7 @@ export default function Feed(props) {
                 data.map(x => {
                     return (
                         <Grid key={x.id} item xs={12}>
-                            <Post author={x.author} content={x.data}/>
+                            <Post timestamp={x.timestamp} author={x.author} content={x.data}/>
                         </Grid>
                     )
                 })

@@ -65,7 +65,7 @@ export default function Profile({username, data}) {
         {data.record.posts.map(x => {
           return (
             <Grid key={x.id} item xs={12}>
-              <Post author={x.author} content={x.data}/>
+              <Post timestamp={x.timestamp} author={x.author} content={x.data}/>
             </Grid>
           )
         })}

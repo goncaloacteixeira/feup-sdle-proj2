@@ -38,7 +38,7 @@ export default function MainPage() {
                     <DevBar data={info.data}/>
                     <Grid container>
                         <Grid item p={4} xs={3}>
-                            <SidePanel info={info} />
+                            <SidePanel />
                         </Grid>
                         <Grid p={4} item xs={9}>
                             <NewPostForm/>

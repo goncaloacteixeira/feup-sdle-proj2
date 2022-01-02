@@ -1,19 +1,17 @@
-import {Button, Container, Grid, Typography} from "@mui/material";
+import {Button, Container, Grid, Link, Typography} from "@mui/material";
 import LetterAvatar from "./LetterAvatar";
 import React from "react";
 import axios from "axios";
 
-export default function ProfileUnsub({username}) {
-  const handleFollow = e => {
-    console.log("Following:", username);
-    axios.post('/p2p/subscribe', {username: username})
+export default function ProfileOffline({username}) {
+  const handleUnfollow = e => {
+    axios.post('/p2p/unsubscribe', {username: username})
     .then(res => {
       if (res.data.message !== "ERR_NOT_FOUND") {
         window.location.reload(false);
       }
     });
   }
-
 
   return (
     <Container maxWidth="md">
@@ -25,14 +23,14 @@ export default function ProfileUnsub({username}) {
           <Grid container spacing={2} direction="column">
             <Grid item>
               <span>{username}</span>
-              <Button sx={{mx: 3}} onClick={handleFollow} variant="outlined">Follow</Button>
+              <Button sx={{mx: 3}} onClick={handleUnfollow} variant="outlined">Unfollow</Button>
             </Grid>
           </Grid>
         </Grid>
       </Grid>
       <hr/>
       <Typography variant="h4">
-        Follow to see this user's posts and information.
+        This user hasn't published on the network yet.
       </Typography>
     </Container>
   )

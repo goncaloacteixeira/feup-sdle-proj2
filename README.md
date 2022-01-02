@@ -21,7 +21,7 @@ Group members:
 	If you want a new instance for the server in detached mode, add the following environment variables:
 	- MODE=DETACHED
 	- PORT=\<port>
-	- USERNAME=\<username>
+	- APP_USERNAME=\<username>
 	- PEERID=\<key.json>
 	These variables can be added on the command or in a .env file
 

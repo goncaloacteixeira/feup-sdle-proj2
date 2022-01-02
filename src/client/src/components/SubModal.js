@@ -68,7 +68,7 @@ export default function SubModal({open, handleClose, usersList, followingList}) 
                             disablePadding
                         >
                             <ListItemAvatar>
-                                <Avatar>{value[0]}</Avatar>
+                                <Avatar>{value[0].toUpperCase()}</Avatar>
                             </ListItemAvatar>
                             <ListItemText id={labelId}>
                                 <Link href={"/profile/" + value} color="inherit" underline="hover">{value}</Link>

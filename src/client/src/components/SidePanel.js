@@ -86,7 +86,7 @@ export default function SidePanel(props) {
                         >
                             <ListItemButton>
                             <ListItemAvatar>
-                                <Avatar>H</Avatar>
+                                <Avatar>{value[0].toUpperCase()}</Avatar>
                             </ListItemAvatar>
                             <ListItemText id={labelId}>
                                 <Link href={"/profile/" + value} color="inherit" underline="hover">{value}</Link>

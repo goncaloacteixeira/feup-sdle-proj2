@@ -9,6 +9,7 @@ import ProfileSelf from "../components/ProfileSelf";
 import Profile from "../components/Profile";
 import SidePanel from "../components/SidePanel";
 import { Grid } from "@mui/material";
+import LoadingPage from "./LoadingPage";
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -27,7 +28,7 @@ export default function ProfilePage() {
   }, []);
 
   if (!data) {
-    return "Loading...";
+    return <LoadingPage />;
   }
 
   switch (data.status) {

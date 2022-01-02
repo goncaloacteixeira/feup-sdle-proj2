@@ -6,6 +6,7 @@ import Modal from '@mui/material/Modal';
 import axios from 'axios';
 import DiscoveredPeersGrid from "./DiscoveredPeersGrid";
 import styled from "@emotion/styled";
+import { CircularProgress } from '@mui/material';
 
 styled('input')({
     display: 'none',
@@ -48,7 +49,7 @@ export default function DevModal() {
                     <Typography id="modal-modal-title" variant="h6" component="h2">
                         Developer Information
                     </Typography>
-                    {!data ? "Loading..." :
+                    {!data ? <CircularProgress /> :
                         <div>
                             <DiscoveredPeersGrid peers={data.discovered}/>
                         </div>

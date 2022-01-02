@@ -6,6 +6,7 @@ import Feed from "../components/Feed";
 import NewPostForm from "../components/NewPostForm";
 import SidePanel from "../components/SidePanel";
 import axios from "axios";
+import LoadingPage from "./LoadingPage";
 
 export default function MainPage() {
     const [info, setInfo] = React.useState(null);
@@ -26,13 +27,13 @@ export default function MainPage() {
                 console.log("Hang Up getting info");
                 clearInterval(interval);
             }
-        }, 2000);
+        }, 500);
     }, []);
 
     return (
         <div className="MainPage">
             {!info ?
-                <CircularProgress/> :
+                <LoadingPage/> :
                 <div>
                     <CustomAppBar/>
                     <DevBar data={info.data}/>

@@ -3,31 +3,38 @@ import {Grid, List, ListItem, ListItemButton, ListItemAvatar, Avatar, ListItemTe
 import axios from "axios";
 
 export default function SidePanel(props) {
-    //This will change after firebase and we can obtain all users, for now not showing current user or bootstraps
-    const removeBootstrapNodes = () => {
-        let users = [];
-        props.info.discovered.forEach(value => {
-            if(value.username !== 'bootstrap node' && value.username !== props.info.data.username) {
-                users.push(value);
-            }
-        });
-        return users;
+    const [usernames, setUsernames] = React.useState([]);
+    const [checkedState, setCheckedState] = React.useState(null);
+
+    React.useEffect(() => {
+        axios.get('/users')
+            .then((res) => setUsernames(res.data));
+    }, [])
+
+    React.useEffect(() => {
+        setCheckedState(makeState());
+    }, [usernames])
+
+    const removeSelf = () => {
+        const index = usernames.indexOf(props.info.data.username);
+        if (index > -1) {
+            usernames.splice(index, 1);
+        }
     }
 
+    removeSelf();
+
     const makeState = () => {
-        let state = new Array(removeBootstrapNodes().length).fill(false);
-        removeBootstrapNodes().map((node, index) => {
+        let state = new Array(usernames.length).fill(false);
+        usernames.map((node, index) => {
         props.info.data.subscribed.map((n) => {
-            if(node.username === n) {
+            if(node === n) {
                 state[index] = true;
             }
         })
         })
-
         return state;
     }
-
-    const [checkedState, setCheckedState] = React.useState(makeState());
 
     const handleClick = (e, position) => {
         e.preventDefault();
@@ -67,13 +74,13 @@ export default function SidePanel(props) {
                 maxHeight: 400,
                 '& ul': { padding: 0 },
             }}>
-                {removeBootstrapNodes().map((value, index) => {
-                    const labelId = `checkbox-list-secondary-label-${value.username}`;
+                {usernames.map((value, index) => {
+                    const labelId = `checkbox-list-secondary-label-${value}`;
                     return (
                         <ListItem
-                            key={value.username}
+                            key={value}
                             secondaryAction={
-                                <Button variant={ checkedState[index] ? 'outlined' : 'contained' } onClick={(e) => handleClick(e, index)} size="small" id={value.username}>{ checkedState[index] ? 'Following' : 'Follow' }</Button>
+                                <Button variant={ checkedState[index] ? 'outlined' : 'contained' } onClick={(e) => handleClick(e, index)} size="small" id={value}>{ checkedState[index] ? 'Following' : 'Follow' }</Button>
                             }
                             disablePadding
                         >
@@ -82,7 +89,7 @@ export default function SidePanel(props) {
                                 <Avatar>H</Avatar>
                             </ListItemAvatar>
                             <ListItemText id={labelId}>
-                                <Link href="#" color="inherit" underline="hover">{value.username}</Link>
+                                <Link href={"/profile/" + value} color="inherit" underline="hover">{value}</Link>
                             </ListItemText>
                             </ListItemButton>
                         </ListItem>

@@ -258,6 +258,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
         console.log("Own node has been updated!");
         node.application = JSON.parse(new TextDecoder().decode(msg.data));
         let cid = await username_cid(node.application.username);
+        node.pubsub.publish(node.application.username, new TextEncoder().encode(JSON.stringify(node.application)));
         RECORDS.set(cid.toString(), node.application);
     })
 
@@ -447,7 +448,7 @@ exports.subscribe = async function (node, peerId, username) {
             providers = await all(node.contentRouting.findProviders(cid, {timeout: 5000}));
         } catch (e) {
             console.log("Could not find providers for:", username);
-            return resolve('ERR_NOT_FOUND');
+            return resolve('ERR_NOT_ONLINE');
         }
 
         if (providers.length === 0) {
@@ -528,7 +529,7 @@ exports.unsubscribe = async function (node, peerId, username) {
             providers = await all(node.contentRouting.findProviders(cid, {timeout: 5000}));
         } catch (e) {
             console.log("Could not find providers for:", username);
-            return resolve('ERR_NOT_FOUND');
+            return resolve('ERR_NOT_ONLINE');
         }
 
         if (providers.length === 0) {
@@ -625,6 +626,10 @@ exports.get_record_if_subscribed = async function (node, username) {
         return {message: "OK", content: RECORDS.get(cid.toString())};
     }
 
+    if (collect(node.application.subscribed).contains(username)) {
+        return {message: "ERR_NO_INFO", content: null};
+    }
+
     // check if exists
     const peerId = await get_user_id_by_username(username);
     if (peerId == null) {
@@ -632,7 +637,7 @@ exports.get_record_if_subscribed = async function (node, username) {
     }
 
     // otherwise not subscribed, can't get information
-    return {message: "ERR_NOT_SUBSCRIBED", content:null};
+    return {message: "ERR_NOT_SUBSCRIBED", content: null};
 }
 
 exports.get_feed = function (node) {

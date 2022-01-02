@@ -1,84 +1,72 @@
 import React from "react";
-import { Container, Grid, Link } from "@mui/material";
-import { useParams } from 'react-router-dom';
+import {useParams} from 'react-router-dom';
 
 import '../styles/profile.css';
 import CustomAppBar from "../components/AppBar";
-import LetterAvatar from "../components/LetterAvatar";
-import SubModal from "../components/SubModal";
+import ProfileUnsub from "../components/ProfileUnsub";
+import ProfileOffline from "../components/ProfileOffline";
+import ProfileSelf from "../components/ProfileSelf";
+import Profile from "../components/Profile";
 
 export default function ProfilePage() {
-    const { username } = useParams();
+  const {username} = useParams();
 
-    const [followersOpen, setFollowersOpen] = React.useState(false);
-    const [followingOpen, setFollowingOpen] = React.useState(false);
+  const [data, setData] = React.useState(null);
 
-    const handleFollowersOpen = () => setFollowersOpen(true);
-    const handleFollowingOpen = () => setFollowingOpen(true);
+  React.useEffect(() => {
+    fetch("/p2p/profiles/" + username)
+      .then((res) => res.json())
+      .then((res) => {
+        setData({
+          status: res.message.message,
+          record: res.message.content
+        });
+      });
+  }, []);
 
-    const [record, setRecord] = React.useState(null);
-
-    React.useEffect(() => {
-        fetch("/p2p/profiles/" + username)
-            .then((res) => res.json())
-            .then((res) => {
-                if (res.message === "ERR_NOT_SUBSCRIBED") {
-                    // lida com isto bidon
-                    setRecord({
-                        username: username,
-                        subscribers: [],
-                        subscribed: [],
-                        posts: [],
-                    });
-                } else {
-                    setRecord(res.message);
-                }
-            });
-    }, []);
-
-    let followersList;
-    let followingList;
-    if (record) {
-        followersList = record.subscribers;
-        followingList = record.subscribed;
-    }
-    
-
+  if (!data) {
     return (
+      "Loading..."
+    )
+  }
+
+  switch (data.status) {
+    case "ERR_NOT_FOUND":
+      // change this to a 404
+      return (
+        <h1>User Not Found</h1>
+      )
+    case "ERR_SELF":
+      return (
         <div className="ProfilePage">
-            <CustomAppBar/>
-            {!record ? 'Starting node...' :
-                <Container maxWidth="md">
-                    <Grid container spacing={2} sx={{ my: 3 }} justifyContent="center" alignItems="center">
-                        <Grid item>
-                            <LetterAvatar name={username} />
-                        </Grid>
-                        <Grid item>
-                            <Grid container spacing={2} direction="column">
-                                <Grid item>
-                                    <span>{username}</span>
-                                </Grid>
-                                <Grid item>
-                                    <Grid container spacing={2} direction="row">
-                                        <Grid item>
-                                            <span><b>{ record.posts.length }</b> posts</span>
-                                        </Grid>
-                                        <Grid item>
-                                            <Link className="customLink" underline="none" onClick={handleFollowersOpen}><b>{ followersList.length }</b> followers</Link>
-                                            <SubModal open={followersOpen} handleClose={() => setFollowersOpen(false)} usersList={followersList} followingList={followersList} ></SubModal>
-                                        </Grid>
-                                        <Grid item>
-                                            <Link className="customLink" underline="none" onClick={handleFollowingOpen}><b>{ followersList.length }</b> following</Link>
-                                            <SubModal open={followingOpen} handleClose={() => setFollowingOpen(false)} usersList={followersList} followingList={followersList} ></SubModal>
-                                        </Grid>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <hr />
-                </Container>
-            }
+          <CustomAppBar/>
+          <ProfileSelf username={username} data={data}/>
         </div>
-    );
+      )
+    case "ERR_NOT_SUBSCRIBED":
+      return (
+        <div className="ProfilePage">
+          <CustomAppBar/>
+          <ProfileUnsub username={username}/>
+        </div>
+      )
+    case "ERR_NO_INFO":
+      return (
+        <div className="ProfilePage">
+          <CustomAppBar/>
+          <ProfileOffline username={username}/>
+        </div>
+      )
+    case "OK":
+      return (
+        <div className="ProfilePage">
+          <CustomAppBar/>
+          <Profile username={username} data={data}/>
+        </div>
+      )
+    default:
+      return (
+        <h1>ERROR</h1>
+      )
+  }
 }

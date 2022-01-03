@@ -19,6 +19,9 @@ let node = null;
 async function create(username, peerIdJson) {
     if (node == null)
         node = await p2p.create_node(username, peerIdJson);
+
+    p2p.startEphemeral(node);
+
     return node;
 }
 
@@ -63,6 +66,7 @@ router.post('/logout', async (req, res) => {
     }
 
     await p2p.stop_node(node);
+    p2p.stopEphemeral();
     node = null;
     res.send("OK");
 })

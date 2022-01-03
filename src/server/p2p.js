@@ -26,6 +26,36 @@ const BOOTSTRAP_IDS = [
 const BOOTSTRAP_IP = process.env.BOOTSTRAP_IP || '127.0.0.1';
 
 let RECORDS = new Map();
+let ephemeralHandler = null;
+
+const EPHEMERAL_TIMEOUT = 24*60*60*1000;
+
+const set_record = function(cid, record) {
+    RECORDS.set(cid, {record: record, added: Date.now()});
+}
+
+const cleanEphemeral = function (node) {
+    RECORDS.forEach((value, key, map) => {
+        const elapsed = Date.now() - value.added;
+        if (node.application.username === value.record.username) {
+            return;
+        }
+
+        // 10 seconds
+        if (elapsed >= EPHEMERAL_TIMEOUT) {
+            console.log("Removing ephemeral record for:", value.record.username);
+            map.delete(key);
+        }
+    });
+}
+
+exports.startEphemeral = function (node) {
+    ephemeralHandler = setInterval(() => cleanEphemeral(node), 500);
+}
+
+exports.stopEphemeral = function () {
+    clearInterval(ephemeralHandler);
+}
 
 exports.create_node = async function create_node(username, peerIdJSON) {
     const peerId = await PeerId.createFromJSON(peerIdJSON);
@@ -77,7 +107,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
         subscribers: [],
         username: username,
         peerId: node.peerId.toB58String(),
-        updated: 0,
+        updated: Date.now(),
     };
 
     node.on('peer:discovery', (peer) => {
@@ -109,7 +139,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
 
             if (providers.length === 0) {
                 console.log("Record not found! Creating...")
-                RECORDS.set(cid.toString(), node.application);
+                set_record(cid.toString(), node.application);
                 await node.contentRouting.provide(cid)
                     .catch(e => console.warn("Providing own record:", e.code));
                 console.log("> Providing own record");
@@ -146,7 +176,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
                         }
 
                         record = JSON.parse(allItems[0]);
-                        RECORDS.set(cid.toString(), record);
+                        set_record(cid.toString(), record);
                         node.application = record;
                         console.log("Retrieved own record from:", providers[i - 1].id.toB58String());
                         await node.contentRouting.provide(cid);
@@ -158,7 +188,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
 
             if (record === null) {
                 console.log("Record not found! Creating...")
-                RECORDS.set(cid.toString(), node.application);
+                set_record(cid.toString(), node.application);
                 await node.contentRouting.provide(cid)
                     .catch((e) => console.warn("Providing:", e.code));
                 console.log("> Providing own record");
@@ -172,7 +202,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
                     console.log(`[PUBSUB] Record for:${username} updated!`);
                     let record = JSON.parse(new TextDecoder().decode(msg.data));
                     const cid = await username_cid(record.username);
-                    RECORDS.set(cid.toString(), record);
+                    set_record(cid.toString(), record);
                 });
             }
         }
@@ -240,9 +270,9 @@ exports.create_node = async function create_node(username, peerIdJSON) {
                 stream
             );
         } else {
-            console.log("Sending Record:", RECORDS.get(cid).username)
+            console.log("Sending Record:", RECORDS.get(cid).record.username)
             pipe(
-                [JSON.stringify(RECORDS.get(cid))],
+                [JSON.stringify(RECORDS.get(cid).record)],
                 stream
             );
         }
@@ -259,7 +289,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
         node.application = JSON.parse(new TextDecoder().decode(msg.data));
         let cid = await username_cid(node.application.username);
         node.pubsub.publish(node.application.username, new TextEncoder().encode(JSON.stringify(node.application)));
-        RECORDS.set(cid.toString(), node.application);
+        set_record(cid.toString(), node.application);
     })
 
     const listenAddrs = node.transportManager.getAddrs();
@@ -437,7 +467,7 @@ exports.subscribe = async function (node, peerId, username) {
             console.log(`[PUBSUB] Record for:${username} updated!`);
             let record = JSON.parse(new TextDecoder().decode(msg.data));
             const cid = await username_cid(record.username);
-            RECORDS.set(cid.toString(), record);
+            set_record(cid.toString(), record);
         });
 
         // somebody should have the user's record by CID, if not there's nothing we can do.
@@ -500,7 +530,7 @@ exports.subscribe = async function (node, peerId, username) {
                     }
 
                     await node.contentRouting.provide(cid);
-                    RECORDS.set(cid.toString(), record);
+                    set_record(cid.toString(), record);
                     console.log("> Providing for:", username);
                     done = true;
                 }
@@ -623,7 +653,7 @@ exports.get_record_if_subscribed = async function (node, username) {
 
     const cid = await username_cid(username);
     if (RECORDS.has(cid.toString()) && collect(node.application.subscribed).contains(username)) {
-        return {message: "OK", content: RECORDS.get(cid.toString())};
+        return {message: "OK", content: RECORDS.get(cid.toString()).record};
     }
 
     if (collect(node.application.subscribed).contains(username)) {
@@ -644,7 +674,7 @@ exports.get_feed = function (node) {
     let posts = [];
 
     RECORDS.forEach((value) => {
-        posts.push(...value.posts);
+        posts.push(...value.record.posts);
     })
 
     return posts.sort((a, b) => b.timestamp - a.timestamp);

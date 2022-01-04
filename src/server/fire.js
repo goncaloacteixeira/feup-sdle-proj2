@@ -80,6 +80,19 @@ const get_all_usernames = async () => {
     return data;
 }
 
+const get_username = async (queryStr) => {
+    let data = [];
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("username", "==", queryStr));
+    const querySnapshot = await getDocs(q);
+    
+    for (const doc of querySnapshot.docs) {
+        data.push(doc.data().username);
+    }
 
-module.exports = { auth, db, get_user_id_by_username, signup_create_peer_id, get_all_usernames };
+    return data;
+}
+
+
+module.exports = { auth, db, get_user_id_by_username, signup_create_peer_id, get_all_usernames, get_username };
 

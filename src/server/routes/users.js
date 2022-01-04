@@ -9,4 +9,12 @@ router.get('/',  async (req, res) => {
   res.send(usernames);
 });
 
+router.get('/:query', async (req, res) => {
+  const query = req.params.query;
+
+  const usernames = await fire.get_username(query);
+
+  res.send(usernames);
+});
+
 module.exports = router;

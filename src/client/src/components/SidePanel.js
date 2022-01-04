@@ -1,4 +1,7 @@
 import React from "react";
+import { TextField, InputAdornment } from "@mui/material";
+import SearchIcon from '@mui/icons-material/Search';
+
 import {
   Grid,
   List,
@@ -73,11 +76,30 @@ export default function SidePanel() {
     }
   };
 
+  const handleSearchChange = (e) => {
+    console.log(e.target.value);
+
+    axios.get("/users/" + e.target.value).then((res) => setUsernames(res.data));
+  }
+
   return (
-    <Grid container>
+    <Grid container alignItems="center">
       <Typography mx={2} variant="h4">
           Users
       </Typography>
+      <Grid item>
+      <TextField 
+          size="small"
+          fullWidth
+          placeholder="Search users"
+          id="outlined-start-adornment"
+          sx={{ m: 1, width: '25ch' }}
+          onChange={handleSearchChange}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
+          }}
+        />
+      </Grid>
       {!info || !usernames || !checkedState ? (
         <CircularProgress />
       ) : (

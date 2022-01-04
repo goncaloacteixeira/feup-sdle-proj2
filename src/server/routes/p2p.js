@@ -67,6 +67,7 @@ router.post('/logout', async (req, res) => {
 
     await p2p.stop_node(node);
     p2p.stopEphemeral();
+    p2p.stop_save_state();
     node = null;
     res.send("OK");
 })

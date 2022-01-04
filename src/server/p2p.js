@@ -162,7 +162,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
 
     if (BOOTSTRAP_IDS.includes(connection.remotePeer.toB58String())) {
       await delay(2000);
-      exports.start_save_state(node, 10000);
+      exports.start_save_state(node, 5000);
 
       const cid = await username_cid(node.application.username);
 
@@ -575,6 +575,7 @@ exports.subscribe = async function (node, peerId, username) {
 
       const ping = await check_alive(node, peerId, 3000);
       if (ping.status !== 0) {
+        i++;
         continue;
       }
 
@@ -659,6 +660,7 @@ exports.unsubscribe = async function (node, peerId, username) {
 
       const ping = await check_alive(node, peerId, 3000);
       if (ping.status !== 0) {
+        i++;
         continue;
       }
 

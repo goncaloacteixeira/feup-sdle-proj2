@@ -107,16 +107,6 @@ exports.create_node = async function create_node(username, peerIdJSON) {
       pubsub: Gossipsub,
       dht: DHT,
     },
-    dialer: {
-      dialTimeout: 1000,
-      maxDialsPerPeer: 4,
-    },
-    connectionManager: {
-      pollInterval: 1000,
-    },
-    metrics: {
-      enabled: true,
-    },
     config: {
       peerDiscovery: {
         autoDial: true,
@@ -404,13 +394,16 @@ function ping(node, peerId, timeout) {
 }
 
 async function check_alive(node, peerId, timeout) {
-  const result = await ping(node, peerId, timeout);
+  const result = await ping(node, peerId, timeout*2);
   if (result == null) {
+    console.log("Couldnt ping (-1):", "ERR_NOT_REACHABLE");
     return { status: -1, message: "ERR_NOT_REACHABLE" };
   }
   if (!isFinite(result)) {
+    console.log("Couldnt ping (-2):", result);
     return { status: -2, message: result };
   }
+  console.log("Ping:", result);
   return { status: 0, message: result };
 }
 

@@ -10,6 +10,7 @@ import Profile from "../components/Profile";
 import SidePanel from "../components/SidePanel";
 import { Grid } from "@mui/material";
 import LoadingPage from "./LoadingPage";
+import ProfileNotFound from "../components/ProfileNotFound";
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -33,8 +34,19 @@ export default function ProfilePage() {
 
   switch (data.status) {
     case "ERR_NOT_FOUND":
-      // change this to a 404
-      return <h1>User Not Found</h1>;
+      return (
+        <div className="ProfilePage">
+          <CustomAppBar />
+          <Grid container>
+            <Grid item p={4} xs={3}>
+              <SidePanel />
+            </Grid>
+            <Grid p={4} item xs={9}>
+            <ProfileNotFound username={username} />
+            </Grid>
+          </Grid>
+        </div>
+      )
     case "ERR_SELF":
       return (
         <div className="ProfilePage">

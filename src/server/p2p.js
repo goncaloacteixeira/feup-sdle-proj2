@@ -410,13 +410,13 @@ async function check_alive(node, peerId, timeout) {
 async function _get_username(node, peerId) {
   return new Promise(async (resolve) => {
     // Check if the node is reachable (fml)
-    /*const ping = await check_alive(node, peerId, 3000);
+    const ping = await check_alive(node, peerId, 10000);
     if (ping.status === -1) {
       return resolve({ message: "unreachable node", code: "ERR_NOT_FOUND" });
     }
     if (ping.status === -2) {
       return resolve({ message: "unreachable node", code: ping.message });
-    }*/
+    }
 
     node.dialProtocol(peerId, ["/username"]).then(
       async ({ stream }) => {
@@ -572,7 +572,7 @@ exports.subscribe = async function (node, peerId, username) {
     while (!done && i < providers.length) {
       let dial = null;
 
-      const ping = await check_alive(node, peerId, 3000);
+      const ping = await check_alive(node, peerId, 10000);
       if (ping.status !== 0) {
         i++;
         continue;
@@ -657,7 +657,7 @@ exports.unsubscribe = async function (node, peerId, username) {
     while (!done && i < providers.length) {
       let dial = null;
 
-      const ping = await check_alive(node, peerId, 3000);
+      const ping = await check_alive(node, peerId, 10000);
       if (ping.status !== 0) {
         i++;
         continue;
@@ -705,7 +705,7 @@ exports.unsubscribe = async function (node, peerId, username) {
 
 exports.echo = async function (node, peerId) {
   return new Promise(async (resolve) => {
-    const ping = await check_alive(node, peerId, 3000);
+    const ping = await check_alive(node, peerId, 10000);
     if (ping.status !== 0) {
       return resolve(false);
     }

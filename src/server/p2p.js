@@ -19,9 +19,9 @@ const fs = require("fs");
 const { get_user_id_by_username } = require("./fire");
 
 const BOOTSTRAP_IDS = [
-  "Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb",
-  "QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs",
-  "Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq",
+  "QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
+  "QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
+  "QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
 ];
 
 const BOOTSTRAP_IP = process.env.BOOTSTRAP_IP || "127.0.0.1";
@@ -112,11 +112,14 @@ exports.create_node = async function create_node(username, peerIdJSON) {
         autoDial: true,
         [Bootstrap.tag]: {
           list: [
-            `/ip4/${BOOTSTRAP_IP}/tcp/8997/p2p/${BOOTSTRAP_IDS[0]}`,
-            `/ip4/${BOOTSTRAP_IP}/tcp/8998/p2p/${BOOTSTRAP_IDS[1]}`,
-            `/ip4/${BOOTSTRAP_IP}/tcp/8999/p2p/${BOOTSTRAP_IDS[2]}`,
+            '/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+            '/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
+            //'/dnsaddr/bootstrap.libp2p.io/p2p/QmZa1sAxajnQjVM8WjWXoMbmPd7NsWhfKsPkErzpm9wGkp',
+            //'/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+            //'/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt'
           ],
-          interval: 1000,
+          interval: 10000,
           enabled: true,
         },
       },
@@ -394,7 +397,7 @@ function ping(node, peerId, timeout) {
 }
 
 async function check_alive(node, peerId, timeout) {
-  const result = await ping(node, peerId, timeout*2);
+  const result = await ping(node, peerId, timeout*4);
   if (result == null) {
     console.log("Couldnt ping (-1):", "ERR_NOT_REACHABLE");
     return { status: -1, message: "ERR_NOT_REACHABLE" };
@@ -460,6 +463,12 @@ exports.get_discovered = async function (node) {
   // usernames
   for (let discoveredElement of discovered) {
     let peerId = PeerId.createFromB58String(discoveredElement.id);
+
+    if (BOOTSTRAP_IDS.includes(discoveredElement.id)) {
+      discoveredElement.username = "bootstrap node";
+      continue;
+    }
+
     let { message, code } = await _get_username(node, peerId);
 
     switch (code) {

@@ -6,7 +6,7 @@ export default function LandingPage() {
     const style = {
         width: '100vw',
         height: '100vh',
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${Background})`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${Background})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
     };
@@ -21,7 +21,7 @@ export default function LandingPage() {
                 </Grid>
                 <Grid item>
                     <Typography mt={5} variant="h5" color="white">
-                        Tuiter is a distributed peer-to-peer social network built on libp2p-js 
+                        Tuiter is a distributed peer-to-peer social network built on <Link href="https://github.com/libp2p/js-libp2p">libp2p-js</Link>
                     </Typography>
                 </Grid>
                 <Grid item>

@@ -3,7 +3,7 @@ import { Grid, Typography } from "@mui/material";
 export default function NotFound() {
   return (
     <Grid
-    style={{height: '100vh'}}
+      style={{ height: "100vh" }}
       justifyContent="center"
       alignItems="center"
       direction="column"

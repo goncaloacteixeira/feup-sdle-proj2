@@ -10,6 +10,7 @@ import WelcomePage from "./pages/WelcomePage";
 import { CircularProgress } from "@mui/material";
 import LoadingPage from "./pages/LoadingPage";
 import LandingPage from "./pages/LandingPage";
+import NotFound from "./components/NotFound";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(null);
@@ -27,6 +28,7 @@ function App() {
       {!isLoggedIn ? (
         <Router>
           <Routes>
+            <Route path="*" element={<NotFound />} />
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<WelcomePage />} />
             <Route path="/signup" element={<WelcomePage />} />
@@ -35,6 +37,7 @@ function App() {
       ) : (
         <Router>
           <Routes>
+            <Route path="*" element={<NotFound />} />
             <Route path="/" element={<MainPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
           </Routes>

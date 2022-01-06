@@ -28,18 +28,18 @@ function App() {
       {!isLoggedIn ? (
         <Router>
           <Routes>
-            <Route path="*" element={<NotFound />} />
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<WelcomePage />} />
             <Route path="/signup" element={<WelcomePage />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
       ) : (
         <Router>
           <Routes>
-            <Route path="*" element={<NotFound />} />
             <Route path="/" element={<MainPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
       )}

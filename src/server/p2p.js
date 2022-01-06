@@ -123,6 +123,15 @@ exports.create_node = async function create_node(username, peerIdJSON) {
       dht: {
         enabled: true,
       },
+      nat: {
+        description: 'my-node', // set as the port mapping description on the router, defaults the current libp2p version and your peer id
+        enabled: true, // defaults to true
+        ttl: 7200, // TTL for port mappings (min 20 minutes)
+        keepAlive: true, // Refresh port mapping after TTL expires
+        pmp: {
+          enabled: false, // defaults to false
+        }
+      }
     },
   });
 
@@ -394,7 +403,7 @@ function ping(node, peerId, timeout) {
 }
 
 async function check_alive(node, peerId, timeout) {
-  const result = await ping(node, peerId, timeout*4);
+  const result = await ping(node, peerId, timeout);
   if (result == null) {
     console.log("Couldnt ping (-1):", "ERR_NOT_REACHABLE");
     return { status: -1, message: "ERR_NOT_REACHABLE" };

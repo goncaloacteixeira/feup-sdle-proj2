@@ -19,9 +19,9 @@ const fs = require("fs");
 const { get_user_id_by_username } = require("./fire");
 
 const BOOTSTRAP_IDS = [
-  "QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
-  "QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
-  "QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
+  "Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb",
+  "QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs",
+  "Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq",
 ];
 
 const BOOTSTRAP_IP = process.env.BOOTSTRAP_IP || "127.0.0.1";
@@ -112,12 +112,9 @@ exports.create_node = async function create_node(username, peerIdJSON) {
         autoDial: true,
         [Bootstrap.tag]: {
           list: [
-            '/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
-            '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-            '/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
-            //'/dnsaddr/bootstrap.libp2p.io/p2p/QmZa1sAxajnQjVM8WjWXoMbmPd7NsWhfKsPkErzpm9wGkp',
-            //'/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
-            //'/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt'
+            `/ip4/${BOOTSTRAP_IP}/tcp/8997/p2p/${BOOTSTRAP_IDS[0]}`,
+            `/ip4/${BOOTSTRAP_IP}/tcp/8998/p2p/${BOOTSTRAP_IDS[1]}`,
+            `/ip4/${BOOTSTRAP_IP}/tcp/8999/p2p/${BOOTSTRAP_IDS[2]}`,
           ],
           interval: 10000,
           enabled: true,
@@ -413,13 +410,13 @@ async function check_alive(node, peerId, timeout) {
 async function _get_username(node, peerId) {
   return new Promise(async (resolve) => {
     // Check if the node is reachable (fml)
-    const ping = await check_alive(node, peerId, 3000);
+    /*const ping = await check_alive(node, peerId, 3000);
     if (ping.status === -1) {
       return resolve({ message: "unreachable node", code: "ERR_NOT_FOUND" });
     }
     if (ping.status === -2) {
       return resolve({ message: "unreachable node", code: ping.message });
-    }
+    }*/
 
     node.dialProtocol(peerId, ["/username"]).then(
       async ({ stream }) => {

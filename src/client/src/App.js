@@ -7,10 +7,10 @@ import ProfilePage from "./pages/ProfilePage";
 import { auth } from "./fire.js";
 
 import WelcomePage from "./pages/WelcomePage";
-import { CircularProgress } from "@mui/material";
 import LoadingPage from "./pages/LoadingPage";
 import LandingPage from "./pages/LandingPage";
 import NotFound from "./components/NotFound";
+import LoginPage from "./pages/LoginPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(null);
@@ -29,7 +29,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<WelcomePage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<WelcomePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

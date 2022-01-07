@@ -29,7 +29,7 @@ export default function CustomAppBar() {
           <Link href="/" variant="h4" className="navbarLink" sx={{flexGrow: 1}}>Tuiter</Link>
           <Link href="/dev" variant="h6" className="navbarLink" sx={{mr: 3}}>Dev</Link>
           <Link href={`/profile/${localStorage.getItem('username')}`} variant="h6" className="navbarLink" sx={{mr: 3}}>Profile</Link>
-          <Link href onClick={handleLogout} variant="h6" className="navbarLink">Logout</Link>
+          <Link onClick={handleLogout} variant="h6" className="navbarLink">Logout</Link>
         </Toolbar>
       </AppBar>
     </Box>

@@ -1,9 +1,9 @@
-import { Container, Grid, Typography } from "@mui/material";
+import {Container, Grid, Typography} from "@mui/material";
 
 import React from "react";
 
 
-export default function ProfileNotFound({ username }) {
+export default function ProfileNotFound({username}) {
   return (
     <Container maxWidth="md">
       <Grid
@@ -20,7 +20,9 @@ export default function ProfileNotFound({ username }) {
           </Typography>
         </Grid>
         <Grid item>
-          <Typography variant="h4">The user your were looking for could not be found</Typography>
+          <Typography variant="h5">
+            The user your were looking for could not be found
+          </Typography>
         </Grid>
       </Grid>
     </Container>

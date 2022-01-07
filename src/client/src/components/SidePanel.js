@@ -4,14 +4,6 @@ import SearchIcon from '@mui/icons-material/Search';
 
 import {
     Grid,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemAvatar,
-    Avatar,
-    ListItemText,
-    Button,
-    Link,
     CircularProgress,
     Typography,
 } from "@mui/material";

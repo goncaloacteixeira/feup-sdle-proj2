@@ -5,7 +5,7 @@ import {signInWithEmailAndPassword} from "firebase/auth";
 import {auth, db} from "../fire";
 import {doc, getDoc} from "firebase/firestore";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 import '../styles/login.css';
 
@@ -46,6 +46,7 @@ export default function LoginPage() {
           }).then((res) => {
             console.log(res.data);
           });
+          localStorage.setItem('username', data.username);
           navigate("/");
         } else {
           console.log("No such document!");
@@ -69,7 +70,7 @@ export default function LoginPage() {
         direction="column"
         alignItems="center"
         justifyContent="center"
-        style={{ minHeight: '100vh' }}
+        style={{minHeight: '100vh'}}
       >
         <Grid item className="colorGrid" justifyContent="center" xs={3}>
           <Typography variant="h2" color="primary" mb={8} mt={5} align="center">
@@ -77,9 +78,9 @@ export default function LoginPage() {
           </Typography>
           <Grid my={1} component="form" onSubmit={handleLogin} container spacing={2}>
             <Grid item xs={8}>
-            {loginError ? <Alert severity="error" >{loginError}</Alert> : null}
+              {loginError ? <Alert severity="error">{loginError}</Alert> : null}
             </Grid>
-          
+
             <Grid item xs={8} align="center">
               <FormControl fullWidth>
                 <InputLabel htmlFor="login-email">Email</InputLabel>
@@ -107,13 +108,12 @@ export default function LoginPage() {
             <Grid item xs={8} align="center" mt={2} mb={5}>
               <FormControl style={{width: '100%'}}>
                 <Grid container justifyContent="space-between" alignItems="center">
-                <Grid item>
-                  <Typography color="primary">Don't have an account? <Link href="/signup" >Sign Up!</Link></Typography>
+                  <Grid item>
+                    <Typography color="primary">Don't have an account? <Link href="/signup">Sign Up!</Link></Typography>
                   </Grid>
                   <Grid item>
-                  <Button variant="contained" type="submit" label="Login" id="login-submit" mb={1}>Login</Button>
+                    <Button variant="contained" type="submit" label="Login" id="login-submit" mb={1}>Login</Button>
                   </Grid>
-                  
                 </Grid>
               </FormControl>
             </Grid>

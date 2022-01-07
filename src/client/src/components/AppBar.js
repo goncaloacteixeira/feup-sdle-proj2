@@ -17,6 +17,7 @@ export default function CustomAppBar() {
     axios.post('/p2p/logout')
       .then(async (res) => {
         await auth.signOut();
+        localStorage.clear();
         navigate('/');
       })
   }
@@ -26,7 +27,8 @@ export default function CustomAppBar() {
       <AppBar position="static" color="secondary">
         <Toolbar>
           <Link href="/" variant="h4" className="navbarLink" sx={{flexGrow: 1}}>Tuiter</Link>
-          <Link href="/profile/andrenasx" variant="h6" className="navbarLink" sx={{mr: 3}}>Profile</Link>
+          <Link href="/dev" variant="h6" className="navbarLink" sx={{mr: 3}}>Dev</Link>
+          <Link href={`/profile/${localStorage.getItem('username')}`} variant="h6" className="navbarLink" sx={{mr: 3}}>Profile</Link>
           <Link href onClick={handleLogout} variant="h6" className="navbarLink">Logout</Link>
         </Toolbar>
       </AppBar>

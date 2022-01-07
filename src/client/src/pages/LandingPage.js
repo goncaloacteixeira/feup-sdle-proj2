@@ -27,10 +27,10 @@ export default function LandingPage() {
                 <Grid item>
                     <Grid mt={10} container spacing={5}>
                         <Grid item>
-                            <Link href="/login" variant="h5" style={{color: 'white'}}>Login</Link>
+                            <Link href="/login" variant="h5" underline="hover" style={{color: 'white'}}>Login</Link>
                         </Grid>
                         <Grid item>
-                            <Link href="/signup" variant="h5" style={{color: 'white'}}>Sign Up</Link>
+                            <Link href="/signup" variant="h5" underline="hover" style={{color: 'white'}}>Sign Up</Link>
                         </Grid>
                     </Grid>
                 </Grid>

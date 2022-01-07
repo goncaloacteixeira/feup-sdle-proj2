@@ -19,13 +19,12 @@ export default function DevPage() {
     }
 
     return (
-        <div style={{height: '100vh'}}>
-            <CustomAppBar/>
-            <DevBar data={data.data}/>
-            <Box p={3}>
-                <DiscoveredPeersGrid peers={data.discovered}/>
-            </Box>
-
-        </div>
+      <>
+        <CustomAppBar/>
+        <DevBar data={data.data}/>
+        <Box p={3}>
+          <DiscoveredPeersGrid peers={data.discovered}/>
+        </Box>
+      </>
     )
 }

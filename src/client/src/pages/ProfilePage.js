@@ -31,6 +31,8 @@ export default function ProfilePage() {
     if (!data) {
         return <LoadingPage/>;
     }
+        
+    data.record.posts = data.record.posts.sort((a, b) => b.timestamp - a.timestamp);
 
     switch (data.status) {
         case "ERR_NOT_FOUND":

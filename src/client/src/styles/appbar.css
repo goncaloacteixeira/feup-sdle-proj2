@@ -1,0 +1,8 @@
+.navbarLink {
+    color: white !important;
+    text-decoration-line: none !important;
+}
+
+.navbarLink:hover {
+    cursor: pointer;
+}

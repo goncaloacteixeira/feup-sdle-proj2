@@ -19,9 +19,7 @@ const fs = require("fs");
 const { get_user_id_by_username } = require("./fire");
 
 const BOOTSTRAP_IDS = [
-  "Qmcia3HF2wMkZXqjRUyeZDerEVwtDtFRUqPzENDcF8EgDb",
-  "QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs",
-  "Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq",
+  "QmbttGsc7MnUUsvL4gy11xdCVpk2fAEzwsceVKXmXoHzzm",
 ];
 
 const BOOTSTRAP_IP = process.env.BOOTSTRAP_IP || "127.0.0.1";
@@ -112,9 +110,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
         autoDial: true,
         [Bootstrap.tag]: {
           list: [
-            `/ip4/${BOOTSTRAP_IP}/tcp/8997/p2p/${BOOTSTRAP_IDS[0]}`,
-            `/ip4/${BOOTSTRAP_IP}/tcp/8998/p2p/${BOOTSTRAP_IDS[1]}`,
-            `/ip4/${BOOTSTRAP_IP}/tcp/8999/p2p/${BOOTSTRAP_IDS[2]}`,
+            `/ip4/${BOOTSTRAP_IP}/tcp/8999/p2p/${BOOTSTRAP_IDS[0]}`
           ],
           interval: 10000,
           enabled: true,
@@ -122,15 +118,6 @@ exports.create_node = async function create_node(username, peerIdJSON) {
       },
       dht: {
         enabled: true,
-      },
-      nat: {
-        description: 'my-node', // set as the port mapping description on the router, defaults the current libp2p version and your peer id
-        enabled: true, // defaults to true
-        ttl: 7200, // TTL for port mappings (min 20 minutes)
-        keepAlive: true, // Refresh port mapping after TTL expires
-        pmp: {
-          enabled: false, // defaults to false
-        }
       }
     },
   });

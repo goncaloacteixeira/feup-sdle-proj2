@@ -1,6 +1,5 @@
 import React from "react";
 import {Alert, Grid, Button} from "@mui/material";
-import DevModal from "./DevModal";
 import axios from "axios";
 
 export default function DevBar({data}) {

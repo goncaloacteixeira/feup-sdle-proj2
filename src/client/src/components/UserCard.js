@@ -1,5 +1,6 @@
 import {Avatar, Button, Grid, Link} from "@mui/material";
 import React from "react";
+import LetterAvatar from "./LetterAvatar";
 
 export default function UserCard({username, checked, handler}) {
 
@@ -8,7 +9,7 @@ export default function UserCard({username, checked, handler}) {
         <Grid item>
             <Grid container spacing={3} alignItems="center">
                 <Grid item>
-                    <Avatar>{username[0].toUpperCase()}</Avatar>
+                    <LetterAvatar name={username}/>
                 </Grid>
                 <Grid item>
                     <Link href={"/profile/" + username} color="inherit" hover="underline"

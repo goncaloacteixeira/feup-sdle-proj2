@@ -2,32 +2,36 @@ import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import {Button} from "@mui/material";
+import {Link} from "@mui/material";
+import {useNavigate} from "react-router-dom";
+
+import "../styles/appbar.css";
 
 import {auth} from '../fire';
 import axios from "axios";
 
 export default function CustomAppBar() {
-    const handleLogout = () => {
-        axios.post('/p2p/logout')
-            .then(async (res) => {
-                await auth.signOut();
-            })
-    }
+  let navigate = useNavigate();
 
-    return (
-        <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static">
-                <Toolbar>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        SDLE PROJECT
-                        <Button style={{color: "white"}} href="/">Home</Button>
-                        <Button style={{color: "white"}} href="/dev">Dev</Button>
-                    </Typography>
-                    <Button style={{color: "white"}} onClick={handleLogout} variant="text">Log Out</Button>
-                </Toolbar>
-            </AppBar>
-        </Box>
-    );
+  const handleLogout = () => {
+    axios.post('/p2p/logout')
+      .then(async (res) => {
+        await auth.signOut();
+        localStorage.clear();
+        navigate('/');
+      })
+  }
+
+  return (
+    <Box sx={{flexGrow: 1}}>
+      <AppBar position="static" color="secondary">
+        <Toolbar>
+          <Link href="/" variant="h4" className="navbarLink" sx={{flexGrow: 1}}>Tuiter</Link>
+          <Link href="/dev" variant="h6" className="navbarLink" sx={{mr: 3}}>Dev</Link>
+          <Link href={`/profile/${localStorage.getItem('username')}`} variant="h6" className="navbarLink" sx={{mr: 3}}>Profile</Link>
+          <Link href onClick={handleLogout} variant="h6" className="navbarLink">Logout</Link>
+        </Toolbar>
+      </AppBar>
+    </Box>
+  ) ;
 }

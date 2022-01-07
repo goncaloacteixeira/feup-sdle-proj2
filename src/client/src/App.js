@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 import MainPage from "./pages/MainPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -39,6 +39,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<MainPage />} />
+            <Route path="/login" element={<Navigate to="/"/>} /> 
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/dev" element={<DevPage />} />
             <Route path="*" element={<NotFound />} />

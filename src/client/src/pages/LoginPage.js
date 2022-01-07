@@ -72,11 +72,14 @@ export default function LoginPage() {
         style={{ minHeight: '100vh' }}
       >
         <Grid item className="colorGrid" justifyContent="center" xs={3}>
-          <Typography variant="h1" color="primary" mb={8} mt={1} align="center">
+          <Typography variant="h2" color="primary" mb={8} mt={5} align="center">
             Login
           </Typography>
-          {loginError ? <Alert severity="error" >{loginError}</Alert> : null}
           <Grid my={1} component="form" onSubmit={handleLogin} container spacing={2}>
+            <Grid item xs={8}>
+            {loginError ? <Alert severity="error" >{loginError}</Alert> : null}
+            </Grid>
+          
             <Grid item xs={8} align="center">
               <FormControl fullWidth>
                 <InputLabel htmlFor="login-email">Email</InputLabel>
@@ -102,9 +105,16 @@ export default function LoginPage() {
               </FormControl>
             </Grid>
             <Grid item xs={8} align="center" mt={2} mb={5}>
-              <FormControl>
-                <Button variant="contained" type="submit" label="Login" id="login-submit" mb={1}>Login</Button>
-                <Typography color="primary">Don't have an account? <Link href="/signup" >Sign Up!</Link></Typography>
+              <FormControl style={{width: '100%'}}>
+                <Grid container justifyContent="space-between" alignItems="center">
+                <Grid item>
+                  <Typography color="primary">Don't have an account? <Link href="/signup" >Sign Up!</Link></Typography>
+                  </Grid>
+                  <Grid item>
+                  <Button variant="contained" type="submit" label="Login" id="login-submit" mb={1}>Login</Button>
+                  </Grid>
+                  
+                </Grid>
               </FormControl>
             </Grid>
           </Grid>

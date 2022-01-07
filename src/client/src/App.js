@@ -10,6 +10,7 @@ import WelcomePage from "./pages/WelcomePage";
 import LoadingPage from "./pages/LoadingPage";
 import LandingPage from "./pages/LandingPage";
 import NotFound from "./components/NotFound";
+import DevPage from "./pages/DevPage";
 import LoginPage from "./pages/LoginPage";
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
+            <Route path="/dev" element={<DevPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>

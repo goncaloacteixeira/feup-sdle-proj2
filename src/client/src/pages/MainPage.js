@@ -38,10 +38,10 @@ export default function MainPage() {
                     <CustomAppBar/>
                     <DevBar data={info.data}/>
                     <Grid container>
-                        <Grid item p={4} xs={3}>
+                        <Grid item p={4} xs={4}>
                             <SidePanel />
                         </Grid>
-                        <Grid p={4} item xs={9}>
+                        <Grid p={4} item xs={8}>
                             <NewPostForm/>
                             <Feed/>
                         </Grid>

@@ -15,6 +15,7 @@ const all = require("it-all");
 const delay = require("delay");
 const Ping = require("libp2p/src/ping");
 const fs = require("fs");
+const { Multiaddr } = require('multiaddr')
 
 const { get_user_id_by_username } = require("./fire");
 
@@ -23,8 +24,10 @@ const BOOTSTRAP_IDS = [
   "QmXkot7VYCjXcoap1D51X1LEiAijKwyNZaAkmcqqn1uuPs",
   "Qmd693X3Jsd2MrBrrdRKiWAUD2zPiXQXnimGJdY4rMpBjq",
 ];
-
 const BOOTSTRAP_IP = process.env.BOOTSTRAP_IP || "127.0.0.1";
+
+const RELAY_ID = "QmbttGsc7MnUUsvL4gy11xdCVpk2fAEzwsceVKXmXoHzzm";
+const RELAY_MULTIADDR = new Multiaddr(`/ip4/${process.env.RELAY_IP || '127.0.0.1'}/tcp/${process.env.RELAY_PORT || 8888}`);
 
 let RECORDS = new Map();
 let ephemeralHandler = null;
@@ -116,13 +119,13 @@ exports.create_node = async function create_node(username, peerIdJSON) {
             `/ip4/${BOOTSTRAP_IP}/tcp/8998/p2p/${BOOTSTRAP_IDS[1]}`,
             `/ip4/${BOOTSTRAP_IP}/tcp/8999/p2p/${BOOTSTRAP_IDS[2]}`,
           ],
-          interval: 1000,
+          interval: 10000,
           enabled: true,
         },
       },
       dht: {
         enabled: true,
-      },
+      }
     },
   });
 
@@ -333,6 +336,8 @@ exports.create_node = async function create_node(username, peerIdJSON) {
 
   await node.start();
   console.log("libp2p has started");
+  let relay_id = await PeerId.createFromB58String(RELAY_ID);
+  node.peerStore.addressBook.set(relay_id, [RELAY_MULTIADDR]);
 
   // subscribe own topic, so it can publish everytime there's a change on its own record
   node.pubsub.subscribe(node.application.username);
@@ -394,7 +399,7 @@ function ping(node, peerId, timeout) {
 }
 
 async function check_alive(node, peerId, timeout) {
-  const result = await ping(node, peerId, timeout*2);
+  const result = await ping(node, peerId, timeout);
   if (result == null) {
     console.log("Couldnt ping (-1):", "ERR_NOT_REACHABLE");
     return { status: -1, message: "ERR_NOT_REACHABLE" };
@@ -410,7 +415,7 @@ async function check_alive(node, peerId, timeout) {
 async function _get_username(node, peerId) {
   return new Promise(async (resolve) => {
     // Check if the node is reachable (fml)
-    const ping = await check_alive(node, peerId, 3000);
+    const ping = await check_alive(node, peerId, 10000);
     if (ping.status === -1) {
       return resolve({ message: "unreachable node", code: "ERR_NOT_FOUND" });
     }
@@ -460,6 +465,16 @@ exports.get_discovered = async function (node) {
   // usernames
   for (let discoveredElement of discovered) {
     let peerId = PeerId.createFromB58String(discoveredElement.id);
+
+    if (BOOTSTRAP_IDS.includes(discoveredElement.id)) {
+      discoveredElement.username = "bootstrap node";
+      continue;
+    }
+    if (RELAY_ID === discoveredElement.id) {
+      discoveredElement.username = "relay node";
+      continue;
+    }
+
     let { message, code } = await _get_username(node, peerId);
 
     switch (code) {
@@ -566,7 +581,7 @@ exports.subscribe = async function (node, peerId, username) {
     while (!done && i < providers.length) {
       let dial = null;
 
-      const ping = await check_alive(node, peerId, 3000);
+      const ping = await check_alive(node, peerId, 10000);
       if (ping.status !== 0) {
         i++;
         continue;
@@ -651,7 +666,7 @@ exports.unsubscribe = async function (node, peerId, username) {
     while (!done && i < providers.length) {
       let dial = null;
 
-      const ping = await check_alive(node, peerId, 3000);
+      const ping = await check_alive(node, peerId, 10000);
       if (ping.status !== 0) {
         i++;
         continue;
@@ -699,7 +714,7 @@ exports.unsubscribe = async function (node, peerId, username) {
 
 exports.echo = async function (node, peerId) {
   return new Promise(async (resolve) => {
-    const ping = await check_alive(node, peerId, 3000);
+    const ping = await check_alive(node, peerId, 10000);
     if (ping.status !== 0) {
       return resolve(false);
     }

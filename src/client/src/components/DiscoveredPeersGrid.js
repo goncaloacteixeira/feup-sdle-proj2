@@ -29,9 +29,9 @@ export default function DiscoveredPeersGrid(props) {
             <DataGrid
                 rows={props.peers}
                 columns={columns}
-                pageSize={5}
+                pageSize={10}
                 rowHeight={150}
-                rowsPerPageOptions={[5]}
+                rowsPerPageOptions={[10]}
                 disableSelectionOnClick
             />
         </div>

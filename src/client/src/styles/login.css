@@ -1,0 +1,14 @@
+.mainGrid {
+    margin-right: auto;
+    margin-left: auto;
+}
+
+form {
+    justify-content: center;
+}
+
+
+.colorGrid {
+    background-color: white;
+    border-radius: 9px;
+}

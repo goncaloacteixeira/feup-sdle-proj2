@@ -21,17 +21,20 @@ function stringToColor(string) {
     return color;
 }
 
-function stringAvatar(name) {
+function stringAvatar(name, size) {
     return {
         sx: {
             bgcolor: stringToColor(name),
+            width: size + 'rem',
+            height: size + 'rem',
+            fontSize: size/2 + 'rem'
         },
         children: `${name[0].toUpperCase()}`,
     };
 }
 
-export default function LetterAvatar({name}) {
+export default function LetterAvatar({name, size=3}) {
     return (
-        <Avatar {...stringAvatar(name)} />
+        <Avatar {...stringAvatar(name, size)} />
     );
 }

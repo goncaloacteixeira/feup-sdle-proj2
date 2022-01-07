@@ -32,8 +32,6 @@ export default function ProfilePage() {
     return <LoadingPage/>;
   }
 
-  data.record.posts = data.record.posts.sort((a, b) => b.timestamp - a.timestamp);
-
   switch (data.status) {
     case "ERR_NOT_FOUND":
       return (
@@ -50,6 +48,8 @@ export default function ProfilePage() {
         </div>
       )
     case "ERR_SELF":
+      data.record.posts = data.record.posts.sort((a, b) => b.timestamp - a.timestamp);
+
       return (
         <div className="ProfilePage">
           <CustomAppBar/>
@@ -92,6 +92,8 @@ export default function ProfilePage() {
         </div>
       );
     case "OK":
+      data.record.posts = data.record.posts.sort((a, b) => b.timestamp - a.timestamp);
+
       return (
         <div className="ProfilePage">
           <CustomAppBar/>

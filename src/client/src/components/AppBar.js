@@ -23,6 +23,7 @@ export default function CustomAppBar() {
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         SDLE PROJECT
                         <Button style={{color: "white"}} href="/">Home</Button>
+                        <Button style={{color: "white"}} href="/dev">Dev</Button>
                     </Typography>
                     <Button style={{color: "white"}} onClick={handleLogout} variant="text">Log Out</Button>
                 </Toolbar>

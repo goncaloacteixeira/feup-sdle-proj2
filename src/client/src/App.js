@@ -11,6 +11,7 @@ import { CircularProgress } from "@mui/material";
 import LoadingPage from "./pages/LoadingPage";
 import LandingPage from "./pages/LandingPage";
 import NotFound from "./components/NotFound";
+import DevPage from "./pages/DevPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(null);
@@ -39,6 +40,7 @@ function App() {
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
+            <Route path="/dev" element={<DevPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>

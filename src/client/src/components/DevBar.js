@@ -35,9 +35,6 @@ export default function DevBar({data}) {
                 Node Started! Current PeerId: { data.peerId }
                 <Grid container>
                     <Grid item>
-                        <DevModal />
-                    </Grid>
-                    <Grid item>
                         <Button onClick={exportRecord}>Export Record</Button>
                     </Grid>
                     <Grid item>

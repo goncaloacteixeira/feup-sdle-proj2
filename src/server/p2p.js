@@ -115,7 +115,9 @@ exports.create_node = async function create_node(username, peerIdJSON) {
         autoDial: true,
         [Bootstrap.tag]: {
           list: [
-            `/ip4/${BOOTSTRAP_IP}/tcp/8999/p2p/${BOOTSTRAP_IDS[0]}`
+            `/ip4/${BOOTSTRAP_IP}/tcp/8997/p2p/${BOOTSTRAP_IDS[0]}`,
+            `/ip4/${BOOTSTRAP_IP}/tcp/8998/p2p/${BOOTSTRAP_IDS[1]}`,
+            `/ip4/${BOOTSTRAP_IP}/tcp/8999/p2p/${BOOTSTRAP_IDS[2]}`,
           ],
           interval: 10000,
           enabled: true,

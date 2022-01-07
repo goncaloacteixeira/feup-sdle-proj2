@@ -6,12 +6,12 @@ import ProfilePage from "./pages/ProfilePage";
 
 import { auth } from "./fire.js";
 
-import WelcomePage from "./pages/WelcomePage";
 import LoadingPage from "./pages/LoadingPage";
 import LandingPage from "./pages/LandingPage";
 import NotFound from "./components/NotFound";
 import DevPage from "./pages/DevPage";
 import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(null);
@@ -31,7 +31,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<WelcomePage />} />
+            <Route path="/signup" element={<SignUpPage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </Router>

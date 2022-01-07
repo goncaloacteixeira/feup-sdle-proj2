@@ -16,7 +16,7 @@ export default function SidePanel() {
     const [info, setInfo] = React.useState(null);
 
     React.useEffect(() => {
-        axios.get("/p2p/info").then((res) => setInfo(res.data));
+        axios.get("/p2p/record").then((res) => setInfo(res.data.message));
     }, []);
 
     React.useEffect(() => {
@@ -30,7 +30,7 @@ export default function SidePanel() {
     }, [usernames]);
 
     const removeSelf = () => {
-        const index = usernames.indexOf(info.data.username);
+        const index = usernames.indexOf(info.username);
         if (index > -1) {
             usernames.splice(index, 1);
         }
@@ -38,13 +38,13 @@ export default function SidePanel() {
 
     const makeState = () => {
         let state = new Array(usernames.length).fill(false);
-        usernames.map((node, index) => {
-            info.data.subscribed.map((n) => {
+        usernames.forEach((node, index) => {
+            info.subscribed.forEach((n) => {
                 if (node === n) {
                     state[index] = true;
                 }
-            });
-        });
+            })
+        })
         return state;
     };
 

@@ -2,7 +2,7 @@ import * as React from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import {CardHeader} from "@mui/material";
+import {CardHeader, Link} from "@mui/material";
 import LetterAvatar from "./LetterAvatar";
 
 export default function Post(props) {
@@ -22,7 +22,7 @@ export default function Post(props) {
         <Card sx={{minWidth: 275}}>
             <CardHeader
                 avatar={<LetterAvatar name={props.author}/>}
-                title={<Typography style={{ fontWeight: 600 }} color="primary" variant="h6">{props.author}</Typography>}
+                title={<Link href={"/profile/" + props.author} underline={"hover"} style={{ fontWeight: 600 }} color="primary" variant="h6">{props.author}</Link>}
                 action={getDate(props.timestamp)}
             />
             <CardContent>

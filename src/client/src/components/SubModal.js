@@ -1,84 +1,62 @@
 import * as React from 'react';
-import { Modal, Box, List, ListItem, ListItemAvatar, Avatar, ListItemText, Button, Link } from "@mui/material";
+import {Modal, Box, Grid} from "@mui/material";
 import axios from "axios";
+import UserCard from "./UserCard";
 
 export default function SubModal({open, handleClose, usersList, followingList}) {
-    let usernames = usersList;
-    let following = followingList;
+  let usernames = usersList;
+  let following = followingList;
 
-    let [username, setUsername] = React.useState(null);
+  const style = {
+    position: 'absolute',
+    overflowY: 'scroll',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    width: '30%',
+    height: '60%',
+    p: 2,
+  };
 
-    React.useEffect(() => {
-        axios.get('/p2p/record')
-        .then(res => setUsername(res.data.message.username)); 
-    }, []);
+  const handleClick = (e, uname) => {
+    e.preventDefault();
 
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        bgcolor: 'background.paper',
-        boxShadow: 24,
-        width: '40%',
-        p: 2,
-    };
-
-    const handleFollow = (uname) => {
-        axios.post('/p2p/subscribe', {username: uname})
-            .then(res => {
-                console.log(res.data);
-                window.location.reload(false);
-            });
+    if (following.includes(uname)) {
+      axios.post('/p2p/unsubscribe', {username: uname})
+        .then(res => {
+          console.log(res.data);
+          window.location.reload(false);
+        });
+    } else {
+      axios.post('/p2p/subscribe', {username: uname})
+        .then(res => {
+          console.log(res.data);
+          window.location.reload(false);
+        });
     }
+  }
 
-    const handleUnfollow = (uname) => {
-        axios.post('/p2p/unsubscribe', {username: uname})
-            .then(res => {
-                console.log(res.data);
-                window.location.reload(false);
-            });
-    }
-
-    const getButton = (uname) => {
-        if (username === uname) {
-            return null;
-        }
-
-        return following.includes(uname) ?
-            <Button onClick={() => handleUnfollow(uname)} variant="contained">Unfollow</Button>
-            :
-            <Button onClick={() => handleFollow(uname)} variant="outlined">Follow</Button>
-    }
-
-    return (
-        <Modal
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-        >
-            <Box sx={style}>
-                <List align="center" dense sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-                {usernames.map((value, index) => {
-                    const labelId = `checkbox-list-secondary-label-${value}`;
-                    return (
-                        <ListItem
-                            key={value}
-                            disablePadding
-                        >
-                            <ListItemAvatar>
-                                <Avatar>{value[0].toUpperCase()}</Avatar>
-                            </ListItemAvatar>
-                            <ListItemText id={labelId}>
-                                <Link href={"/profile/" + value} color="inherit" underline="hover">{value}</Link>
-                            </ListItemText>                          
-                            {username !== null ? getButton(value) : null}
-                        </ListItem>
-                    );
-                })}
-                </List>
-            </Box>
-        </Modal>
-    )
+  return (
+    <Modal
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description"
+    >
+      <Box sx={style}>
+        <Grid container spacing={2} direction="column">
+          {usernames.map((value, index) => {
+            return (
+              <Grid item key={value}>
+                <UserCard handler={(e) => handleClick(e, value)} username={value}
+                          checked={following.includes(value)}/>
+              </Grid>
+            )
+          })}
+        </Grid>
+      </Box>
+    </Modal>
+  )
 }

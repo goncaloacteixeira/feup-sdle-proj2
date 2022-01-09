@@ -12,7 +12,7 @@ export default function UserCard({username, checked, handler}) {
                     <LetterAvatar name={username}/>
                 </Grid>
                 <Grid item>
-                    <Link href={"/profile/" + username} color="inherit" hover="underline"
+                    <Link href={"/profile/" + username} color="inherit" underline="hover"
                           variant="body1">{username}</Link>
                 </Grid>
             </Grid>

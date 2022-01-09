@@ -3,13 +3,24 @@ import LetterAvatar from "./LetterAvatar";
 import SubModal from "./SubModal";
 import Post from "./Post";
 import React from "react";
+import axios from "axios";
+import {Button} from "@mui/material";
 
-export default function ProfileSelf({username, data}) {
+export default function ProfileSub({username, data}) {
   const [followersOpen, setFollowersOpen] = React.useState(false);
   const [followingOpen, setFollowingOpen] = React.useState(false);
 
   const handleFollowersOpen = () => setFollowersOpen(true);
   const handleFollowingOpen = () => setFollowingOpen(true);
+
+  const handleUnfollow = e => {
+    axios.post('/p2p/unsubscribe', {username: username})
+      .then(res => {
+        if (res.data.message !== "ERR_NOT_FOUND") {
+          window.location.reload();
+        }
+      });
+  }
 
   return (
     <Container>
@@ -21,6 +32,9 @@ export default function ProfileSelf({username, data}) {
           <Grid container item xs="auto" spacing={4} direction="row" alignItems="center">
             <Grid item>
               <Typography variant="h5" component="span"><b>{username}</b></Typography>
+            </Grid>
+            <Grid item>
+              <Button onClick={handleUnfollow} variant="outlined">Unfollow</Button>
             </Grid>
           </Grid>
           <Grid container item spacing={3} direction="row">

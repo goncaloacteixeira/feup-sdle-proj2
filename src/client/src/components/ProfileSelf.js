@@ -1,4 +1,4 @@
-import {Button, Container, Divider, Grid, Link, Typography} from "@mui/material";
+import {Container, Divider, Grid, Link, Typography} from "@mui/material";
 import LetterAvatar from "./LetterAvatar";
 import SubModal from "./SubModal";
 import Post from "./Post";
@@ -20,7 +20,7 @@ export default function ProfileSelf({username, data}) {
         <Grid container item xs="auto" spacing={2} direction="column" justifyContent="center">
           <Grid container item xs="auto" spacing={4} direction="row" alignItems="center">
             <Grid item>
-              <Typography variant="h5" component="span">{username}</Typography>
+              <Typography variant="h5" component="span"><b>{username}</b></Typography>
             </Grid>
           </Grid>
           <Grid container item spacing={3} direction="row">

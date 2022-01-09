@@ -23,7 +23,7 @@ export default function ProfileUnsub({username}) {
         </Grid>
         <Grid container item xs="auto" spacing={4} direction="row" alignItems="center">
           <Grid item>
-            <Typography variant="h5" component="span">{username}</Typography>
+            <Typography variant="h5" component="span"><b>{username}</b></Typography>
           </Grid>
           <Grid item>
             <Button onClick={handleFollow} variant="contained">Follow</Button>

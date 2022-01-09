@@ -1,4 +1,4 @@
-import {Button, Container, Divider, Grid, Link, Typography} from "@mui/material";
+import {Button, Container, Divider, Grid, Typography} from "@mui/material";
 import LetterAvatar from "./LetterAvatar";
 import React from "react";
 import axios from "axios";
@@ -21,7 +21,7 @@ export default function ProfileOffline({username}) {
         </Grid>
         <Grid container item xs="auto" spacing={4} direction="row" alignItems="center">
           <Grid item>
-            <Typography variant="h5" component="span">{username}</Typography>
+            <Typography variant="h5" component="span"><b>{username}</b></Typography>
           </Grid>
           <Grid item>
             <Button onClick={handleUnfollow} variant="outlined">Unfollow</Button>

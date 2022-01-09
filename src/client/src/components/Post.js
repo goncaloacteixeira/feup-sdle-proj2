@@ -2,7 +2,7 @@ import * as React from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import {CardHeader, Grid} from "@mui/material";
+import {CardHeader} from "@mui/material";
 import LetterAvatar from "./LetterAvatar";
 
 export default function Post(props) {
@@ -26,7 +26,7 @@ export default function Post(props) {
                 action={getDate(props.timestamp)}
             />
             <CardContent>
-                <Typography variant="body2">{props.content}</Typography>
+                <Typography variant="body1">{props.content}</Typography>
             </CardContent>
         </Card>
     );

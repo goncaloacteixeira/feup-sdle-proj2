@@ -9,16 +9,10 @@ export default function Feed({newPost}) {
     React.useEffect(() => {
         axios.get('/p2p/feed')
             .then((res) => setData(res.data.message));
-    }, [])
+    }, [newPost])
 
     return (
         <Grid container justifyContent="stretch" spacing={3}>
-            {newPost ? 
-                <Grid item xs={12}>
-                    <Post timestamp={newPost.timestamp} author={newPost.author} content={newPost.data}/>
-                </Grid>
-                : null
-            }
             {!data ?
                 <CircularProgress/> :
                 data.map(x => {

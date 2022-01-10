@@ -5,8 +5,6 @@ import axios from "axios";
 import PostAlert from "./PostAlert";
 
 export default function NewPostForm({handleNewPost}) {
-    const [submitted, setSubmitted] = React.useState(false);
-    const [alertOpen, setAlertOpen] = React.useState(true);
     const [chars, setChars] = React.useState(0);
 
     const handleSubmit = e => {
@@ -14,8 +12,6 @@ export default function NewPostForm({handleNewPost}) {
 
         axios.post('/p2p/posts', {post: e.target.post.value})
             .then((res) => {
-                setSubmitted(true);
-                setAlertOpen(true);
                 e.target.post.value = "";
                 setChars(0);
                 handleNewPost(res.data.record.posts[res.data.record.posts.length - 1]);
@@ -31,13 +27,6 @@ export default function NewPostForm({handleNewPost}) {
 
     return (
         <Grid mb={3} onSubmit={handleSubmit} component="form" container spacing={2}>
-            {submitted ?
-                <Grid item xs={12}>
-                    <PostAlert open={alertOpen} setOpen={setAlertOpen}
-                               message="Post submited successfully! Reload to see changes."/>
-                </Grid> :
-                null
-            }
             <Grid item xs={12}>
                 <FormControl fullWidth>
                     <InputLabel name="post" htmlFor="post">New Post</InputLabel>

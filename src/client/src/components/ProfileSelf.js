@@ -8,8 +8,8 @@ export default function ProfileSelf({username, data}) {
   const [followersOpen, setFollowersOpen] = React.useState(false);
   const [followingOpen, setFollowingOpen] = React.useState(false);
 
-  const handleFollowersOpen = () => setFollowersOpen(true);
-  const handleFollowingOpen = () => setFollowingOpen(true);
+  const handleFollowersOpen = () => setFollowersOpen(data.subscribers.length > 0);
+  const handleFollowingOpen = () => setFollowingOpen(data.subscribed.length > 0);
 
   return (
     <Container>

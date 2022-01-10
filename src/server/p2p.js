@@ -34,6 +34,7 @@ let ephemeralHandler = null;
 let saveStateHandler = null;
 
 const EPHEMERAL_TIMEOUT = 24 * 60 * 60 * 1000;
+const EPHEMERAL_MAX_POSTS = 100;
 
 const set_record = function (cid, record) {
     RECORDS.set(cid, {record: record, added: Date.now()});
@@ -46,9 +47,9 @@ const cleanEphemeral = function (node) {
             return;
         }
 
-        if (value.record.posts.length >= 25) {
+        if (value.record.posts.length > EPHEMERAL_MAX_POSTS) {
             console.log("Removing ephemeral posts for:", value.record.username);
-            value.record.posts = value.record.posts.slice(12);
+            value.record.posts = value.record.posts.slice(value.record.posts.length - EPHEMERAL_MAX_POSTS);
         }
 
         // 10 seconds

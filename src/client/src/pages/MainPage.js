@@ -6,6 +6,13 @@ import NewPostForm from "../components/NewPostForm";
 import SidePanel from "../components/SidePanel";
 
 export default function MainPage() {
+  const [newPost, setNewPost] = React.useState(null);
+
+  const handleNewPost = (post) => {
+    console.log(post);
+    setNewPost(post)
+  };
+
   return (
     <div className="MainPage">
       <CustomAppBar />
@@ -14,8 +21,8 @@ export default function MainPage() {
           <SidePanel />
         </Grid>
         <Grid p={4} item xs={8}>
-          <NewPostForm />
-          <Feed />
+          <NewPostForm handleNewPost={handleNewPost} />
+          <Feed newPost={newPost} />
         </Grid>
       </Grid>
     </div>

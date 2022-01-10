@@ -3,7 +3,7 @@ import Post from "./Post";
 import axios from "axios";
 import React from "react";
 
-export default function Feed(props) {
+export default function Feed({newPost}) {
     const [data, setData] = React.useState(null);
 
     React.useEffect(() => {
@@ -13,6 +13,12 @@ export default function Feed(props) {
 
     return (
         <Grid container justifyContent="stretch" spacing={3}>
+            {newPost ? 
+                <Grid item xs={12}>
+                    <Post timestamp={newPost.timestamp} author={newPost.author} content={newPost.data}/>
+                </Grid>
+                : null
+            }
             {!data ?
                 <CircularProgress/> :
                 data.map(x => {

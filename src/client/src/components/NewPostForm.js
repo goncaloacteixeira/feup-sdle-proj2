@@ -4,7 +4,7 @@ import React from "react";
 import axios from "axios";
 import PostAlert from "./PostAlert";
 
-export default function NewPostForm() {
+export default function NewPostForm({handleNewPost}) {
     const [submitted, setSubmitted] = React.useState(false);
     const [alertOpen, setAlertOpen] = React.useState(true);
     const [chars, setChars] = React.useState(0);
@@ -13,12 +13,13 @@ export default function NewPostForm() {
         e.preventDefault();
 
         axios.post('/p2p/posts', {post: e.target.post.value})
-            .then((res) => console.log(res));
-
-        setSubmitted(true);
-        setAlertOpen(true);
-        e.target.post.value = "";
-        setChars(0);
+            .then((res) => {
+                setSubmitted(true);
+                setAlertOpen(true);
+                e.target.post.value = "";
+                setChars(0);
+                handleNewPost(res.data.record.posts[res.data.record.posts.length - 1]);
+            });
     }
 
     const onChange = e => {

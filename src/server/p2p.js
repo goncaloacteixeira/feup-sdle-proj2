@@ -26,9 +26,6 @@ const BOOTSTRAP_IDS = [
 ];
 const BOOTSTRAP_IP = process.env.BOOTSTRAP_IP || "127.0.0.1";
 
-const RELAY_ID = "QmbttGsc7MnUUsvL4gy11xdCVpk2fAEzwsceVKXmXoHzzm";
-const RELAY_MULTIADDR = new Multiaddr(`/ip4/${process.env.RELAY_IP || '127.0.0.1'}/tcp/${process.env.RELAY_PORT || 8888}`);
-
 let RECORDS = new Map();
 let ephemeralHandler = null;
 let saveStateHandler = null;
@@ -338,8 +335,6 @@ exports.create_node = async function create_node(username, peerIdJSON) {
 
     await node.start();
     console.log("libp2p has started");
-    let relay_id = await PeerId.createFromB58String(RELAY_ID);
-    node.peerStore.addressBook.set(relay_id, [RELAY_MULTIADDR]);
 
     // subscribe own topic, so it can publish everytime there's a change on its own record
     node.pubsub.subscribe(node.application.username);
@@ -470,10 +465,6 @@ exports.get_discovered = async function (node) {
 
         if (BOOTSTRAP_IDS.includes(discoveredElement.id)) {
             discoveredElement.username = "bootstrap node";
-            continue;
-        }
-        if (RELAY_ID === discoveredElement.id) {
-            discoveredElement.username = "relay node";
             continue;
         }
 

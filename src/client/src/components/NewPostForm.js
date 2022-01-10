@@ -32,7 +32,7 @@ export default function NewPostForm({handleNewPost}) {
                     <InputLabel name="post" htmlFor="post">New Post</InputLabel>
                     <OutlinedInput
                         maxRows={4}
-                        rows={2}
+                        minRows={2}
                         multiline
                         name="post"
                         required

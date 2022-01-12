@@ -10,8 +10,8 @@ export default function ProfileSub({username, data}) {
   const [followersOpen, setFollowersOpen] = React.useState(false);
   const [followingOpen, setFollowingOpen] = React.useState(false);
 
-  const handleFollowersOpen = () => setFollowersOpen(data.subscribers.length > 0);
-  const handleFollowingOpen = () => setFollowingOpen(data.subscribed.length > 0);
+  const handleFollowersOpen = () => setFollowersOpen(data.record.subscribers.length > 0);
+  const handleFollowingOpen = () => setFollowingOpen(data.record.subscribed.length > 0);
 
   const handleUnfollow = e => {
     axios.post('/p2p/unsubscribe', {username: username})

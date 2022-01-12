@@ -93,6 +93,67 @@ exports.stop_save_state = function () {
     clearInterval(saveStateHandler);
 };
 
+const get_not_followers = async function (node, username) {
+    return new Promise(async (resolve) => {
+        const peerIdStr = await exports.get_peer_id_by_username(node, username);
+        const peerId = await PeerId.createFromB58String(peerIdStr);
+
+        node.dialProtocol(peerId, ["/followers/1.0.0"])
+        .then(async ({stream}) => {
+            await pipe([node.application.username], stream);
+            await pipe(
+                stream,
+                async function (source) {
+                    for await (const msg of source) {
+                        if (msg.toString() === "NO") {
+                            console.log("Removing follower:", username);
+                            resolve(username);
+                        }
+                        return;
+                    }
+                }
+            )
+        }, () => resolve(null));
+    })
+}
+
+const retrieve_followers = async function (node) {
+    let toRemove = [];
+
+    for (const username of node.application.subscribers) {
+        const remove = await get_not_followers(node, username);
+        if (remove) toRemove.push(remove);
+    }
+
+    toRemove.forEach((value) => {
+        let index = node.application.subscribers.indexOf(value);
+        if (index > -1) {
+            node.application.subscribers.splice(index, 1);
+        }
+    });
+
+    console.log(node.application.subscribers);
+
+    if (node.pubsub.started)
+        exports.put_record(node, node.application)
+            .then(() => console.log("Updated after retrieving followers!"));
+}
+
+const trigger_update_record = async function (node, username) {
+    const peerIdStr = await exports.get_peer_id_by_username(node, username);
+    const peerId = await PeerId.createFromB58String(peerIdStr);
+
+    console.log("Starting update trigger for:", username)
+    node.dialProtocol(peerId, ["/update/1.0.0"])
+    .then(async ({stream}) => {
+        pipe([node.application.username], stream);
+    }, (_) => console.log("Node not reachable for trigger update:", username));
+}
+
+const update_records = function (node) {
+    node.application.subscribed.forEach((username) => trigger_update_record(node, username));
+}
+
 exports.create_node = async function create_node(username, peerIdJSON) {
     const peerId = await PeerId.createFromJSON(peerIdJSON);
 
@@ -145,6 +206,8 @@ exports.create_node = async function create_node(username, peerIdJSON) {
 
     node.connectionManager.on("peer:connect", async (connection) => {
         console.log("Connected to:", connection.remotePeer.toB58String());
+        retrieve_followers(node);
+        update_records(node);
 
         // if the connection was established to a Bootstrap Peer, then it should have
         // the public record available if it does exist for this user, then it should
@@ -183,6 +246,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
                         set_record(cid.toString(), record);
                     });
                 }
+                retrieve_followers(node);
                 return;
             }
 
@@ -203,6 +267,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
                     .provide(cid)
                     .catch((e) => console.warn("Providing own record:", e.code));
                 console.log("> Providing own record");
+                retrieve_followers(node);
                 return;
             }
 
@@ -271,6 +336,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
                     set_record(cid.toString(), record);
                 });
             }
+            retrieve_followers(node);
         }
 
         node.peerStore.addressBook.add(connection.remotePeer, [
@@ -332,6 +398,34 @@ exports.create_node = async function create_node(username, peerIdJSON) {
             pipe([JSON.stringify(RECORDS.get(cid).record)], stream);
         }
     });
+
+    node.handle("/followers/1.0.0", async ({stream}) => {
+        console.log("Followers protocol started!")
+        let username = null;
+        await pipe(stream, async function (source) {
+            for await (const msg of source) {
+                username = msg.toString();
+                return;
+            }
+        });
+        if (!username) return;
+
+        pipe([node.application.subscribed.includes(username) ? "YES" : "NO"], stream);
+
+        exports.put_record(node, node.application);
+    });
+
+    node.handle("/update/1.0.0", async ({stream}) => {
+        console.log("Update trigger started!");
+        await pipe(stream, async function (source) {
+            for await (const msg of source) {
+                username = msg.toString();
+                console.log("Trigger started by:", username);
+                return;
+            }
+        });
+        exports.put_record(node, node.application);
+    })
 
     await node.start();
     console.log("libp2p has started");

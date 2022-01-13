@@ -45,7 +45,7 @@ For development and testing purposes, if you want a new instance for the server 
     
     These variables can be added on the command or in a .env file
 
-	**available credentials for testing**:
+	**available credentials for testing**:  
 	    - username: `test1`  
 	    - peerid: `./key1.json`  
 

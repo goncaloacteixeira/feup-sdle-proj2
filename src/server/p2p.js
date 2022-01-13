@@ -132,8 +132,6 @@ const retrieve_followers = async function (node) {
         }
     });
 
-    console.log(node.application.subscribers);
-
     if (node.pubsub.started)
         exports.put_record(node, node.application)
             .then(() => console.log("Updated after retrieving followers!"));

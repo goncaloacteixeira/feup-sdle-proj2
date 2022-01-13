@@ -37,16 +37,16 @@ For development and testing purposes, if you want a new instance for the server 
     - run `npm i`
 	- run `npm start`
 	
-	**Environment Variables**:
-        - MODE=DETACHED
-        - PORT=\<port>
-        - APP_USERNAME=\<username>
-        - PEERID=\<key.json>
+	**Environment Variables**:  
+        - MODE=DETACHED  
+        - PORT=\<port>  
+        - APP_USERNAME=\<username>  
+        - PEERID=\<key.json>  
     
     These variables can be added on the command or in a .env file
 
 	**available credentials for testing**:
-	    - username: `test1`
-	    - peerid: `./key1.json`
+	    - username: `test1`  
+	    - peerid: `./key1.json`  
 
 	

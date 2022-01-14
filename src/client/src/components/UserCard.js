@@ -1,4 +1,4 @@
-import {Avatar, Button, Grid, Link} from "@mui/material";
+import {Button, Grid, Link} from "@mui/material";
 import React from "react";
 import LetterAvatar from "./LetterAvatar";
 

@@ -1,8 +1,7 @@
-import {FormControl, Grid, InputLabel, OutlinedInput, Alert, InputAdornment, Typography} from "@mui/material";
+import {FormControl, Grid, InputLabel, OutlinedInput, Typography} from "@mui/material";
 import Button from "@mui/material/Button";
 import React from "react";
 import axios from "axios";
-import PostAlert from "./PostAlert";
 
 export default function NewPostForm({handleNewPost}) {
     const [chars, setChars] = React.useState(0);

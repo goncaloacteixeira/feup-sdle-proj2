@@ -1,5 +1,5 @@
 import React from "react";
-import {Grid, Box, Typography, FormControl, InputLabel, OutlinedInput, Button, Alert, Link} from '@mui/material';
+import {Grid, Typography, FormControl, InputLabel, OutlinedInput, Button, Alert, Link} from '@mui/material';
 import Background from '../bg.png'
 import {signInWithEmailAndPassword} from "firebase/auth";
 import {auth, db} from "../fire";

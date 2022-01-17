@@ -210,7 +210,6 @@ exports.create_node = async function create_node(username, peerIdJSON) {
 
   node.connectionManager.on("peer:connect", async (connection) => {
     console.log("Connected to:", connection.remotePeer.toB58String());
-    retrieve_followers(node);
     update_records(node);
 
     // if the connection was established to a Bootstrap Peer, then it should have
@@ -234,6 +233,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
         providers = [];
       }
 
+      let record = null;
       if (providers.length === 0) {
         console.log("Record not found! Trying to read from cache...");
       } else {
@@ -245,7 +245,6 @@ exports.create_node = async function create_node(username, peerIdJSON) {
         );
 
         let done = false;
-        let record = null;
         let i = 0;
         while (!done && i < providers.length) {
           let dial = null;

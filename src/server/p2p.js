@@ -692,7 +692,12 @@ exports.subscribe = async function (node, peerId, username) {
         }
 
         // update their subscribers list and send them to the topic
-        record = JSON.parse(allItems[0]);
+        try {
+            record = JSON.parse(allItems[0]);
+        } catch (e) {
+            return;
+        }
+        
         if (record === "ERR_NOT_FOUND") {
           return;
         }

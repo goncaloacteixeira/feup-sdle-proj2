@@ -221,7 +221,6 @@ exports.create_node = async function create_node(username, peerIdJSON) {
 
     if (BOOTSTRAP_IDS.includes(connection.remotePeer.toB58String())) {
       await delay(2000);
-      exports.start_save_state(node, 5000);
 
       const cid = await username_cid(node.application.username);
 
@@ -309,6 +308,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
           });
         }
         retrieve_followers(node);
+        exports.start_save_state(node, 5000);
         return;
       }
 
@@ -333,6 +333,7 @@ exports.create_node = async function create_node(username, peerIdJSON) {
           set_record(cid.toString(), record);
         });
       }
+      exports.start_save_state(node, 5000);
       retrieve_followers(node);
     }
 

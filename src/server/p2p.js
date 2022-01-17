@@ -692,15 +692,10 @@ exports.subscribe = async function (node, peerId, username) {
         }
 
         // update their subscribers list and send them to the topic
-        try {
-            record = JSON.parse(allItems[0]);
-        } catch (e) {
+        if (allItems[0] === "ERR_NOT_FOUND") {
             return;
         }
-        
-        if (record === "ERR_NOT_FOUND") {
-          return;
-        }
+        record = JSON.parse(allItems[0]);
 
         if (!collect(record.subscribers).contains(node.application.username)) {
           record.subscribers.push(node.application.username);
@@ -783,7 +778,11 @@ exports.unsubscribe = async function (node, peerId, username) {
         }
 
         // update their subscribers list and send them to the topic
+        if (allItems[0] === "ERR_NOT_FOUND") {
+            return;
+        }
         record = JSON.parse(allItems[0]);
+
         if (collect(record.subscribers).contains(node.application.username)) {
           record.subscribers = record.subscribers.filter(function (value) {
             return value !== username;

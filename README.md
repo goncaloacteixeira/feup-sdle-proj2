@@ -10,12 +10,6 @@ Group members:
 
 
 ## Requirements
-
-#### Just to run the application
-- docker
-- docker-compose
-
-#### Testing and developing
 - node >= 16.0
 - npm
 - docker
@@ -26,11 +20,15 @@ Group members:
 - On `src/bootstrap/`
 	- run `docker-compose up`
 	
-- On `src/`
-	- insert the bootstrap IP on the docker-compose.yml file (it cannot be localhost or 127.0.0.1 since it's running on different containers)
-	- run `docker-compose up --build`
-	The application will be accessible on port 8080.
+- On `src/server/`
+	- insert the BOOTSTRAP_IP on a `.env` file (it cannot be localhost or 127.0.0.1 since it's running on different containers)
+	- run `npm i`
+	- run `npm start`
+	The server will be accessible on port 9000.
 
+- On `src/client/`
+	- run `npm i`
+	- run `npm start`
 
 For development and testing purposes, if you want a new instance for the server in detached mode:
 - On `src/server/`
